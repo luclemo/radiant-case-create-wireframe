@@ -24,8 +24,6 @@ browser opens in a window.
   part of the form.
 - Cons: the clinical section gets taller (more scrolling); edits are live, so there's no single "cancel all".
 
-Both are bilingual, share the same grayscale style, and use the same HPO tree browser.
-
 ## How to open it
 
 Open either `.html` file **in a real browser** (double-click, or `open <file>`). It needs a real
