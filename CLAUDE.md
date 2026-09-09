@@ -1,7 +1,9 @@
 # CLAUDE.md
 
 Notes for whoever (human or Claude) picks this repo up next — including on a different machine.
-Last brought up to date: **2026-09-08**, end of the review session with Vincent.
+Last brought up to date: **2026-09-09**, when Lucas pulled Vincent's fork back into the
+original repo. Everything below the "Working rules" section is Vincent's, from the 2026-09-08
+review session, and has not been re-verified since.
 
 ## What this repo is
 
@@ -33,15 +35,33 @@ once version B had changed enough that a running changelog stopped earning its k
 happens directly in conversation and in commit messages. Technical caveats, assumptions and open
 questions live here in CLAUDE.md.
 
-Working rules Vincent set, which still hold unless he says otherwise:
+## Working rules
 
-- **Only edit the wireframe when he asks for it explicitly.** Otherwise the point stays in the
-  conversation (or a commit message), not by editing the file.
+Two people work in this repo, from two remotes:
+
+| Remote | Owner | What it is |
+|---|---|---|
+| `origin` — `luclemo/radiant-case-create-wireframe` | **Lucas** (UX) | the original repo, where both wireframes started |
+| `vf` — `vferretti/radiant-case-create-wireframe-vf` | **Vincent** | the fork holding the 2026-09-08 review work |
+
+On 2026-09-09 Lucas fast-forwarded `origin/main` onto Vincent's fork, so the two are level.
+The branch **`lucas-pre-vf`** (`935ad60`) marks the last commit before that integration — the
+original two-version wireframe, kept for reference and diffing. Read it, don't build on it.
+
+**Work out whose session this is before answering.** Ask if it isn't obvious.
+
 - **Vincent writes in French. Answer in French.**
-- Idea recorded but never built: surface his notes inside the wireframe as a second tab in the
-  `.notes-legend` block, under the **Codes** toggle.
-- Commits: he asks for them explicitly, and asks to push separately. Everything so far is on
-  `main`, pushed to `origin` (github.com:vferretti/radiant-case-create-wireframe-vf).
+- **Lucas writes in English. Answer in English.** He is the designer on this form. When he asks
+  for UI copy, give French and English both, or ask which he needs — the product ships in both.
+
+Discipline that holds for either of them, unless that person says otherwise:
+
+- **Only edit a wireframe when asked to, explicitly.** These are demo artifacts shown live in
+  review sessions; an unrequested edit can surprise someone mid-demo. Otherwise the point belongs
+  in the conversation or a commit message, not in the file.
+- **Commits are an explicit ask, and pushing is a second, separate ask.**
+- Idea recorded but never built: surface the reviewer's notes inside the wireframe as a second tab
+  in the `.notes-legend` block, under the **Codes** toggle.
 
 ## Data sources
 
