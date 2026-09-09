@@ -1,61 +1,52 @@
 # Case creation — wireframe
 
-An interactive wireframe for the new case-creation form. It explores a **"derive-and-hide"**
-idea: any required value that the system can work out from something the user already entered is
-dropped from the form and set behind the scenes. Fewer fields to fill, less room for error. Case
-type, for example, comes from the chosen analysis and shows as a small badge instead of a field.
+Interactive wireframe for the new case-creation form, exploring **"derive-and-hide"**: any
+required value the system can work out from something already entered is dropped from the form
+and set behind the scenes. Case type, for example, is derived from the analysis and shown as a badge.
 
-There are **two versions** to compare. They are identical except for how the clinical-signs
-(HPO phenotype) picker is placed.
+Open **`case-create-signs-inline.html`** in a real browser (double-click, or `open <file>`). The
+form reacts as you fill it, so a static preview won't work.
 
-## The two versions
+`case-create-signs-modal.html` is an abandoned earlier version — ignore it.
 
-**Version A — signs in a modal** (`case-create-signs-modal.html`)
-One "Add clinical signs" button opens a picker dialog with search, suggestions, and the
-not-observed list; browsing the full HPO tree opens a second window on top.
-- Pros: the form stays short; picking phenotypes feels like one focused task; a single Cancel
-  backs out of all the phenotype edits at once.
-- Cons: an extra click before you even see the suggestions; two stacked windows when browsing the tree.
+## The form
 
-**Version B — signs inline** (`case-create-signs-inline.html`)
-The suggestions and the selected / not-observed lists sit directly in the form; only the HPO tree
-browser opens in a window.
-- Pros: suggestions are visible immediately once an analysis is picked; fewer layers; reads as
-  part of the form.
-- Cons: the clinical section gets taller (more scrolling); edits are live, so there's no single "cancel all".
+Five sections — **Analyse · Patient (cas index) · Signes cliniques · Autres informations
+cliniques · Famille** — plus a summary rail tracking required fields.
 
-## How to open it
+- **Analysis menu** — the real 37-analysis catalog (`analysis_catalog_qlin.csv`), searchable.
+  Matches anywhere in the string, since names are prefixed with act numbers.
+- **Patient lookup is identifier-first** — keys on identifier + patient organization. `1234` at
+  Sainte-Justine prefills health number, names, sex, date of birth; anything else reports a new
+  patient. Resolves after a deliberate ~700 ms delay.
+- **Clinical signs** — observed (green ✓, with onset), and not-observed (red ✗) behind an opt-in
+  checkbox.
+- **HPO search matches the displayed language only** — "hearing" in French returns nothing, by design.
+- **MONDO browser is a shell** — no hierarchy on disk, so it lists the catalog's conditions flat
+  and says so on screen.
+- **Cas prénatal** retitles section 2 « Patient (cas index, mère) », prefills Sexe as Féminin, and
+  opens the prenatal block (fetal sex, gestational age, DDM/DPA) at the end of that section. Does
+  **not** change priority.
 
-Open either `.html` file **in a real browser** (double-click, or `open <file>`). It needs a real
-browser because the form reacts as you fill it — a static preview won't run those toggles.
+## Controls (top right)
 
-Two controls sit at the top right:
-- **Field codes** — toggles the small grey developer annotations (the `field_code` hints and the
-  numbered reviewer notes) on and off. Off = the clean view a real user would see.
-- **EN / FR** — switches the language. **French is the default**; switching keeps everything you've
-  already entered.
-
-Checking the **Prenatal case** box reveals the prenatal-only fields (fetal sex, gestational age)
-and bumps the case to STAT priority — a good thing to show live.
+- **Field codes** (« Codes » in FR) — toggles the `field_code` hints and numbered reviewer notes.
+  Off = the clean user view.
+- **EN / FR** — French is the default. Switching keeps what you've entered.
 
 ## Demo tips
 
-- **Lead with one version.** Pick A or B up front rather than flipping between them mid-demo —
-  the difference is subtle and the switch reads as indecision.
-- **Turn Field codes OFF before showing users.** The codes are for us; users should see the clean form.
+- Turn Field codes **off** before showing users.
 - Leave the language on French unless the audience needs English.
+- Have `1234` / Sainte-Justine ready for the lookup — it's the only record in the mock.
 
 ## Still pending
 
-- **French HPO terms need clinical review.** Much of the ontology's French is machine-translated
-  and reads oddly. A handful of common terms were fixed by hand; the rest need a French clinician's eye.
-- **TSOL (solid tumour) suggestions need confirming.** The suggested phenotypes per analysis are a
-  first guess from HPO, not a clinical source. TSOL especially — somatic oncology intake may not
-  use HPO phenotypes this way.
-- **Prenatal is now in scope.** These fields are a first pass for feedback (this reverses an earlier
-  note that prenatal was out of scope).
-- **Performing-lab derivation is still open (dependency #35).** Whether the lab can be hidden and
-  derived after intake depends on unresolved backend questions.
-
-_Working notes, the full change log, and the backend-mapping detail live in `NOTES-internal.md`
-(not part of the demo)._
+- **French HPO terms need clinical review** — largely machine-translated; some common terms fixed by hand.
+- **French MONDO labels too** — resolved from the EBI OLS API, translated for the mock.
+- **Phenotype suggestions are placeholder** — one generic list for every analysis except RAPIDE
+  and GENOR (none). Real per-analysis lists are an unmade clinical call.
+- **No MONDO hierarchy** behind the browse button.
+- **Two possible catalog errors** — NPC and NEUTP both read « Neutropénie congénitale »; HLEB and
+  HLH both carry act number 55412.
+- **Performing-lab derivation still open (dependency #35)** — depends on unresolved backend questions.
