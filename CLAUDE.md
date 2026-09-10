@@ -150,12 +150,22 @@ onset). Vertical rhythm inside the block: **12 px** under an instruction, **16 p
 sub-heading, **6 px** under one.
 
 **4 · Autres informations cliniques (facultatives)** — Consanguinité | Ethnicité(s) (multi-valued,
-chips); **Histoire familiale** (checkbox « Antécédents familiaux connus » → one compact row per
-relative: lien de parenté · sexe · statut · texte libre · ✕, plus an add button); Indication
-principale (MONDO) typeahead + « Parcourir l'arbre MONDO »; Note clinique.
+chips); Indication principale (MONDO) typeahead + « Parcourir l'arbre MONDO »; Note clinique.
+Family history **left this section on 2026-09-10** — section 5 owns it now.
 
-**5 · Famille** — under the « Sections facultatives » divider: add-a-member rows and the live
-pedigree.
+**5 · Analyse familiale** — under the « Sections facultatives » divider. No opt-in checkbox: a
+standing description carries the ask (« Rapportez des antécédents familiaux et incluez, le cas
+échéant, … »), so the section is always open. Then the member cards, the
+« ＋ Ajouter un membre de la famille » button **below** the list, and the live pedigree.
+
+One card per relative, in two halves. The top line is the family-history record every relative
+gets — Lien de parenté · Sexe · Statut · Préciser (free text) — with the relationship field kept
+as narrow as its labels allow and **Statut shown as initials** (A · NA · I in French, A · NA · U
+in English) so the free text takes the width that is left; each initial carries the full word as
+its tooltip. Below it the checkbox « Inclure dans l'analyse génétique »: ticking it opens the
+patient-identification block (Identifiant | Établissement du patient / RAMQ | Date de naissance /
+Prénom | Nom — the proband's fields minus sex and life status), because a member in the analysis
+becomes a Patient in Radiant.
 
 **Rail** — Analyse (+ germline/somatic badge) · Catégorie · Priorité · ID cas index ·
 Établissement du patient · Sexe · Date de naissance, then « Ajouts facultatifs »: Indication
@@ -227,6 +237,24 @@ principale · Phénotypes · Consanguinité · Ethnicité(s) · Note clinique ·
 - **Long HPO labels wrap** rather than truncate, except on a row that shows its onset menu, where
   the name ellipsizes and keeps the full term in its tooltip. `.layout` uses `minmax(0,1fr)` +
   `min-width:0` so a 130-character label can never widen the column again.
+- **One family section, two roles** (2026-09-10, Lucas). Family history left section 4 and
+  section 5 now records both a relative who is only *reported* and one who is also *sequenced*.
+  This is Vincent's `case-create-essai.html` "approach A" idea, done in version B's own shape —
+  a per-member checkbox rather than essai's badge-and-accent-border card. The section lost its
+  opt-in checkbox in the process, so it no longer clears itself; a card is dropped with its ✕.
+- **The per-member checkbox gates the required fields.** A reported-only relative needs nothing
+  past the top line; `validateConditionals()` skips its row entirely. Unticking runs
+  `emptyFamSeq()`, which blanks the identification inputs rather than only hiding them — the
+  same "nothing hidden reaches the case" rule as the other reveal blocks.
+- **The pedigree draws the family, not the sequencing batch.** Every member with a relationship
+  is drawn whether or not they are in the analysis. It came back on 2026-09-10 after the
+  2026-09-08 redesign dropped its host div; `renderPedigree()` had survived untouched, but two
+  of its selectors had rotted — it read sex from a field the card no longer had, and status from
+  `.seg:not([data-fam-seg])`, which the renamed segment no longer matched. Hence Sexe returning
+  to the card. There is **no sequenced ring** in the notation, despite what the old comment said.
+- **Section 5 offers the full relation list again** (`OPTIONS.relation`, 8 entries), not the four
+  sequenceable ones: now that it carries family history, a reported relative can be a
+  half-sibling or an « Autre ». The pedigree still lists those rather than placing them.
 
 ## Open questions
 

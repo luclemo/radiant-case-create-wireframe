@@ -69,7 +69,6 @@
      not under the input, and the row's height is unchanged */
   .grid.align-end{align-items:end}
   /* family member: relationship + affected status + sex on one line */
-  .famline{display:grid;grid-template-columns:minmax(150px,230px) max-content max-content 1fr;gap:0 16px;align-items:end}
   /* compact remove ✕ on the fields line (same treatment as the phenotype rows) */
   .famx{justify-self:end;align-self:end;font-size:14px;color:var(--faint);cursor:pointer;line-height:1;padding-bottom:9px}
   .famx:hover{color:var(--req)}
@@ -226,18 +225,10 @@
         padding:12px;border:1px solid var(--line-soft);border-radius:5px;margin-bottom:10px;background:#fafbfc}
   .del{color:var(--faint);font-size:16px;align-self:center;cursor:pointer}
   .addbtn{border:1px dashed var(--line);border-radius:5px;padding:9px;text-align:center;color:var(--mut);font-size:12px;background:#fff;cursor:pointer}
-  /* family history: header and rows share ONE grid — display:contents on each row hands its
-     cells to the parent, so a column is as wide as the widest cell in it, header included.
-     Relationship is kept narrow; the free text takes everything that is left. */
-  .fhgrid{display:grid;grid-template-columns:150px max-content max-content minmax(140px,1fr) 14px;
-        gap:6px 8px;align-items:center;margin:8px 0 6px}
-  .fhhead, #famhist-list, .fhrow{display:contents}
-  .fhhead span{font-size:12px;color:var(--ink);font-weight:500}
-  .fhrow .ctrl.select{min-width:0;white-space:nowrap;overflow:hidden}
-  .fhrow .seg span{padding:6px 10px}
-  .fhrow .famx{justify-self:center;align-self:center;padding-bottom:0}
-  .fhadd{padding:7px}
   .addbtn:hover{color:var(--ink);border-color:var(--accent)}
+  /* section 5's standing description: it replaced the opt-in checkbox, so the section is always
+     open and this paragraph carries the ask instead (2026-09-10). 12px under an instruction. */
+  .faminstr{font-size:12px;color:var(--mut);line-height:1.5;margin:0 0 12px;max-width:74ch}
 
   /* live pedigree preview, drawn from the proband + family members */
   .pedigree{margin-top:16px;border-top:1px solid var(--line-soft);padding-top:14px;text-align:center}
@@ -274,12 +265,14 @@
   /* family-member header: relative caption on the left, remove on the right (2026-09-08:
      each relative is now shown as a Patient-style card of identifying fields) */
   .famhead{display:flex;align-items:center;justify-content:flex-end;margin-bottom:2px}
-  .famhead .fammember{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
   /* the compact family-history-style line (relationship · affected status · free text) */
-  .famtop{display:grid;grid-template-columns:minmax(110px,150px) max-content minmax(160px,1fr);gap:0 16px;align-items:end}
-  .famtop .ctrl.select{min-width:0}
+  /* relationship · sex · status · specify. Relationship is kept as narrow as its longest label
+     allows and the status segment shows initials, so the free-text Specify gets the rest (2026-09-10) */
+  .famtop{display:grid;grid-template-columns:minmax(92px,108px) max-content max-content minmax(120px,1fr);gap:0 16px;align-items:end}
+  .famtop .ctrl.select{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* initials need less room than words; the full term lives in each span's tooltip */
+  .famtop .seg span{padding:7px 10px}
   /* the Patient-style identifying fields sit under the line, set off by a dashed rule */
-  .famids{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-soft)}
   /* family-member footer: sequencing toggle on the left, remove on the right */
   .famfoot{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
   /* revealed only when a family member will be sequenced: identity fields it then needs */
@@ -627,24 +620,6 @@
               <div class="f"><label><span data-i18n="lbl.ancestry">Ethnicities</span> <span class="key">(ethnicity_codes)</span></label><div class="ctrl select" tabindex="0" data-sel="ancestry" data-i18n-ph="ph.select">Select…</div></div>
               <!-- the standardized indication sits directly above the free-text note: one is the
                    coded answer, the other the prose around it (moved here 2026-09-08) -->
-            <!-- Family history: a checkbox, then one compact row per relative — relationship,
-                 sex, status, free text — added and removed by hand (2026-09-08) -->
-            <div class="f full" id="famhist-field">
-              <label class="check" data-check="famhist"><span class="box"></span><span data-i18n="lbl.famHistoryOn">Known family history</span> <span class="key">(family_history)</span></label>
-              <div id="famhist-body" hidden>
-                <div class="fhgrid">
-                  <div class="fhhead">
-                    <span data-i18n="lbl.relation">Relationship</span>
-                    <span data-i18n="lbl.sex">Sex</span>
-                    <span data-i18n="lbl.affected">Affected status</span>
-                    <span data-i18n="lbl.fhSpecify">Specify</span>
-                    <span></span>
-                  </div>
-                  <div id="famhist-list"></div>
-                </div>
-                <div class="addbtn fhadd" id="famhist-add" data-i18n="lbl.addFamHistory">＋ Add a relative</div>
-              </div>
-            </div>
             <div class="f full"><label><span data-i18n="lbl.condition">Primary indication (MONDO)</span> <span class="key">(primary_condition_value)</span></label>
               <!-- same shape as the phenotype rows: the field, then a browse button (2026-09-08) -->
               <div class="msearchrow">
@@ -665,14 +640,15 @@
       <section class="sec">
         <header><span class="n">5</span><h2 data-i18n="sec.family">Family analysis</h2><span class="chev" data-i18n="ui.collapse">－ collapse</span></header>
         <div class="body">
-          <!-- the ask is a checkbox: unchecked, the section is one line; checked, it opens the
-               family-member rows and the live pedigree. Closing it drops what was entered, so
-               nothing hidden ends up in the case (2026-09-08) -->
-          <label class="check" data-check="family"><span class="box"></span><span data-i18n="fam.instruction">Add the family members sequenced and analyzed together with the proband (duo, trio, sibship)</span></label>
-          <div id="family-body" hidden>
-            <div id="family-list"></div>
-            <div class="addbtn" id="add-family" data-i18n="lbl.addFamily">＋ Add family member</div>
-          </div>
+          <!-- This section owns both family roles as of 2026-09-10: a relative is recorded here
+               whether they are only being reported as history or are also being sequenced. The
+               opt-in checkbox is gone — the description below carries the ask, and the section
+               is always open, so nothing is silently dropped by collapsing it. The per-member
+               « Inclure dans l'analyse génétique » checkbox is what reveals the patient fields. -->
+          <p class="faminstr" data-i18n="fam.instruction">Report family history and, where applicable, include members in the proband's genetic analysis (duo, trio, etc.). A member included in the analysis requires a patient record (identifier).</p>
+          <div id="family-list"></div>
+          <div class="addbtn" id="add-family" data-i18n="lbl.addFamily">＋ Add family member</div>
+          <div id="pedigree" class="pedigree" hidden></div>
         </div>
       </section>
 
@@ -19661,10 +19637,10 @@
       'sum.observed':'Observed', 'sum.notObserved':'Not observed',
       'lbl.consang':'Consanguinity', 'lbl.ancestry':'Ethnicities', 'lbl.note':'Clinical note',
       'lbl.onset':'Onset', 'lbl.addFamily':'＋ Add family member',
-      'fam.instruction':'Family members (mother, father, siblings) sequenced and analyzed together',
-      'lbl.relation':'Relationship', 'lbl.relative':'Family member', 'lbl.affected':'Affected status', 'lbl.willSeq':'Will be sequenced',
-      'lbl.famHistory':'Family history', 'lbl.famHistoryOn':'Known family history',
-      'lbl.fhSpecify':'Specify', 'lbl.addFamHistory':'＋ Add a family member', 'ph.specify':'Free text',
+      'fam.instruction':'Report family history and, where applicable, include members in the proband’s genetic analysis (duo, trio, etc.). A member included in the analysis requires a patient record (identifier).',
+      'lbl.inclSeq':'Include in the genetic analysis',
+      'lbl.relation':'Relationship', 'lbl.relative':'Family member', 'lbl.affected':'Affected status',
+      'lbl.fhSpecify':'Specify', 'ph.specify':'Free text',
       'ph.select':'Select…', 'ph.analysis':'Select an analysis…', 'ph.idValue':'Identifier value',
       'ph.jhn':'RAMQ (QC) or regional JHN', 'ph.optional':'Optional', 'ph.dob':'YYYY-MM-DD',
       'ph.freetext':'Free text', 'ph.condition':'Search an indication (name or MONDO:…)',
@@ -19677,6 +19653,7 @@
       'life.Alive':'Alive', 'life.Deceased':'Deceased', 'life.Unknown':'Unknown',
       'yn.Yes':'Yes', 'yn.No':'No', 'yn.Unknown':'Unknown', 'abbr.sexU':'U',
       'aff.Affected':'Affected', 'aff.NotAffected':'Not affected', 'aff.Unknown':'Unknown',
+      'abbr.affA':'A', 'abbr.affNA':'NA', 'abbr.affU':'U',
       'cat.Prenatal':'Prenatal', 'cat.Postnatal':'Postnatal',
       'type.Germline':'Germline', 'type.Somatic':'Somatic',
       'rail.summary':'Case summary', 'rail.analysis':'Analysis', 'rail.category':'Category', 'rail.probandId':'Proband ID',
@@ -19749,10 +19726,10 @@
       'sum.observed':'Observés', 'sum.notObserved':'Non observés',
       'lbl.consang':'Consanguinité', 'lbl.ancestry':'Ethnicité(s)', 'lbl.note':'Note clinique',
       'lbl.onset':'Âge d’apparition', 'lbl.addFamily':'＋ Ajouter un membre de la famille',
-      'fam.instruction':'Membres de la famille (mère, père, fratrie) séquencés et analysés conjointement',
-      'lbl.relation':'Lien de parenté', 'lbl.relative':'Membre de la famille', 'lbl.affected':'Statut', 'lbl.willSeq':'Sera séquencé',
-      'lbl.famHistory':'Histoire familiale', 'lbl.famHistoryOn':'Antécédents familiaux connus',
-      'lbl.fhSpecify':'Préciser', 'lbl.addFamHistory':'＋ Ajouter un membre de la famille', 'ph.specify':'Texte libre',
+      'fam.instruction':'Rapportez des antécédents familiaux et incluez, le cas échéant, des membres dans l’analyse génétique du cas index (duo, trio, etc.). Un membre inclus dans l’analyse requiert un dossier patient (identifiant).',
+      'lbl.inclSeq':'Inclure dans l’analyse génétique',
+      'lbl.relation':'Lien de parenté', 'lbl.relative':'Membre de la famille', 'lbl.affected':'Statut',
+      'lbl.fhSpecify':'Préciser', 'ph.specify':'Texte libre',
       'ph.select':'Sélectionner…', 'ph.analysis':'Sélectionner une analyse…', 'ph.idValue':'Valeur de l’identifiant',
       'ph.jhn':'RAMQ (QC) ou NAM régional', 'ph.optional':'Facultatif', 'ph.dob':'AAAA-MM-JJ',
       'ph.freetext':'Texte libre', 'ph.condition':'Rechercher une indication (nom ou MONDO:…)',
@@ -19765,6 +19742,7 @@
       'life.Alive':'Vivant', 'life.Deceased':'Décédé', 'life.Unknown':'Inconnu',
       'yn.Yes':'Oui', 'yn.No':'Non', 'yn.Unknown':'Inconnue', 'abbr.sexU':'I',
       'aff.Affected':'Atteint', 'aff.NotAffected':'Non atteint', 'aff.Unknown':'Inconnu',
+      'abbr.affA':'A', 'abbr.affNA':'NA', 'abbr.affU':'I',
       'cat.Prenatal':'Prénatal', 'cat.Postnatal':'Postnatal',
       'type.Germline':'Germinal', 'type.Somatic':'Somatique',
       'rail.summary':'Résumé du cas', 'rail.analysis':'Analyse', 'rail.category':'Catégorie', 'rail.probandId':'ID cas index',
@@ -20530,44 +20508,6 @@
     if(!document.getElementById('mondo-modal').hasAttribute('hidden')) closeMondo();
   });
 
-  /* ---------- family history: compact rows, revealed by a checkbox ----------
-     Relationship · sex · status · free text, one line each, added and removed by hand. Nothing
-     is derived from them and they don't feed the pedigree — that is the Family section's job;
-     this records relatives who are simply reported, not sequenced. */
-  function fhRow(){
-    var row = document.createElement('div');
-    row.className = 'fhrow';
-    row.innerHTML =
-      '<div class="ctrl select" tabindex="0" data-fh="relation" data-i18n-ph="ph.select">Select…</div>' +
-      '<div class="seg" data-fh-seg="sex"><span data-val="M" data-i18n-title="sex.M">M</span><span data-val="F" data-i18n-title="sex.F">F</span><span data-val="U" data-i18n="abbr.sexU" data-i18n-title="sex.U">U</span></div>' +
-      '<div class="seg" data-fh-seg="status"><span data-val="Affected" data-i18n="aff.Affected">Affected</span>' +
-        '<span data-val="NotAffected" data-i18n="aff.NotAffected">Not affected</span></div>' +
-      '<input class="ctrl" type="text" data-fh="note" data-i18n-ph="ph.specify" placeholder="Free text">' +
-      '<span class="famx" data-i18n-title="ui.removeRow" title="Remove">✕</span>';
-    var rel = row.querySelector('[data-fh="relation"]');
-    rel.addEventListener('click', function(){
-      openMenu(rel, menuItems('relation'), rel.classList.contains('filled') ? rel.dataset.value : null, function(v){
-        setSel(rel, 'relation', v);
-        /* the same inference as the Family section: an unambiguous relationship gives the sex */
-        var sex = { Female:'F', Male:'M' }[REL_SEX[v]];
-        if(sex){
-          var seg = row.querySelector('[data-fh-seg="sex"]');
-          Array.prototype.forEach.call(seg.children, function(sp){ sp.classList.toggle('on', sp.dataset.val === sex); });
-          seg.classList.remove('flash'); void seg.offsetWidth; seg.classList.add('flash');
-        }
-      }, {search:false});
-    });
-    row.querySelectorAll('.seg').forEach(function(seg){
-      seg.addEventListener('click', function(e){
-        var span = e.target.closest('span'); if(!span) return;
-        Array.prototype.forEach.call(seg.children, function(sp){ sp.classList.remove('on'); });
-        span.classList.add('on');
-      });
-    });
-    row.querySelector('.famx').addEventListener('click', function(){ row.remove(); });
-    localize(row);
-    return row;
-  }
   /* the not-observed half opens on demand; closing it drops what was picked, so nothing hidden
      ends up in the case */
   (function(){
@@ -20582,30 +20522,6 @@
         if(pheno.negative.length){ pheno.negative = []; renderPheno(); sumPheno(); }
         else renderSearchResults('negative');
       }
-    });
-  })();
-
-  (function(){
-    var box  = document.querySelector('[data-check="famhist"]');
-    var body = document.getElementById('famhist-body');
-    var list = document.getElementById('famhist-list');
-    document.getElementById('famhist-add').addEventListener('click', function(){ list.appendChild(fhRow()); });
-    box.addEventListener('click', function(){
-      var on = box.classList.toggle('on');
-      if(on){ body.removeAttribute('hidden'); if(!list.children.length) list.appendChild(fhRow()); }
-      else { body.setAttribute('hidden',''); list.innerHTML = ''; }   // nothing hidden submits
-    });
-  })();
-
-  /* the family-analysis section opens on demand; closing it drops the members entered, so
-     nothing hidden ends up in the case (mirrors the not-observed and family-history blocks) */
-  (function(){
-    var box  = document.querySelector('[data-check="family"]');
-    var body = document.getElementById('family-body');
-    box.addEventListener('click', function(){
-      var on = box.classList.toggle('on');
-      if(on){ body.removeAttribute('hidden'); if(!famList.children.length) document.getElementById('add-family').click(); }
-      else { body.setAttribute('hidden',''); famList.innerHTML = ''; sumFamily(); }
     });
   })();
 
@@ -20800,7 +20716,9 @@
   var famList = document.getElementById('family-list');
   var FAM_PRESET = ['Mother', 'Father']; // a new row prefills the first of these not already used
   var FAM_UNIQUE = ['Mother', 'Father']; // singleton relations — excluded once chosen elsewhere
-  var FAM_RELATIONS = ['Mother', 'Father', 'Sister', 'Brother']; // this section is limited to these four
+  /* the full relation list is offered again (2026-09-10): this section took over family
+     history, and a reported relative can be a half-sibling or an "Other" the four-way
+     sequenceable list could not express. The pedigree lists what it cannot place. */
 
   /* relations already chosen by OTHER rows (the current row keeps its own value selectable) */
   function famUsedRelations(exceptRow){
@@ -20814,7 +20732,7 @@
   /* menu items for a row: Mother/Father get disabled once used by another member */
   function famRelationItems(row){
     var used = famUsedRelations(row);
-    return FAM_RELATIONS.map(function(r){
+    return OPTIONS.relation.map(function(r){
       var it = { value:r, label:optLabel('relation', r) };
       if(FAM_UNIQUE.indexOf(r) !== -1 && used.indexOf(r) !== -1) it.disabled = true;
       return it;
@@ -20822,30 +20740,48 @@
   }
   function famApplyRelation(row, v){
     setSel(row.querySelector('[data-fam="relation"]'), 'relation', v);
+    /* infer sex from relationship (the unambiguous ones only) — editable after. The sex
+       control uses short M|F|U codes in data-val, so map the inferred value onto those. */
+    var sex = { Female:'F', Male:'M' }[REL_SEX[v]];
+    if(sex){
+      var seg = row.querySelector('[data-fam-seg="sex"]');
+      Array.prototype.forEach.call(seg.children, function(sp){ sp.classList.toggle('on', sp.dataset.val === sex); });
+      seg.classList.remove('flash'); void seg.offsetWidth; seg.classList.add('flash');
+    }
+    renderPedigree();
   }
   document.getElementById('add-family').addEventListener('click', function(){
     var row = document.createElement('div');
     row.className = 'frow';
     row.style.display = 'block';
-    /* Each relative is shown as a Patient-style card of identifying fields, minus sex and life
-       status (2026-09-08). Relationship leads; the patient organization defaults to the
-       proband's via syncFamilyOrg. Every field the proband needs to be sequenced, the relative
-       needs too, so they are always shown (no per-row "will be sequenced" toggle any more). */
+    /* A card has two halves. The top line is the family-history record every relative gets —
+       relationship, sex, affected status, free text — and it is all a reported relative needs.
+       « Inclure dans l'analyse génétique » then reveals the patient-identification block below
+       the dashed rule: a member in the analysis becomes a Patient in Radiant, so it asks for
+       exactly the fields the proband does, minus sex (already on the line above) and life
+       status. The block clears itself when unticked, so nothing hidden reaches the case. */
     row.innerHTML =
       '<div class="famhead">' +
         '<span class="famx" data-i18n-title="ui.removeRow" title="Remove">✕</span>' +
       '</div>' +
-      /* the family-history line, minus sex: relationship, affected status, free text */
+      /* the family-history line: relationship, sex, affected status, free text. Sex is back
+         because the pedigree needs it to draw ■/●/◆; the status segment shows initials so the
+         free text gets the width left over (2026-09-10) */
       '<div class="famtop">' +
         '<div class="f"><label><span data-i18n="lbl.relation">Relationship</span> <span class="req">*</span> <span class="key">(relation_to_proband_code)</span></label>' +
           '<div class="ctrl select" tabindex="0" data-fam="relation" data-i18n-ph="ph.select">Select…</div></div>' +
+        '<div class="f"><label><span data-i18n="lbl.sex">Sex</span> <span class="req">*</span> <span class="key">(sex_code)</span></label>' +
+          '<div class="seg" data-fam-seg="sex"><span data-val="M" data-i18n-title="sex.M">M</span><span data-val="F" data-i18n-title="sex.F">F</span><span data-val="U" data-i18n="abbr.sexU" data-i18n-title="sex.U">U</span></div></div>' +
         '<div class="f"><label><span data-i18n="lbl.affected">Affected status</span> <span class="req">*</span> <span class="key">(affected_status_code)</span></label>' +
-          '<div class="seg" data-fam-seg="status"><span data-val="Affected" data-i18n="aff.Affected">Affected</span><span data-val="NotAffected" data-i18n="aff.NotAffected">Not affected</span><span class="on" data-val="Unknown" data-i18n="aff.Unknown">Unknown</span></div></div>' +
+          '<div class="seg" data-fam-seg="status"><span data-val="Affected" data-i18n="abbr.affA" data-i18n-title="aff.Affected">A</span><span data-val="NotAffected" data-i18n="abbr.affNA" data-i18n-title="aff.NotAffected">NA</span><span class="on" data-val="Unknown" data-i18n="abbr.affU" data-i18n-title="aff.Unknown">U</span></div></div>' +
         '<div class="f"><label><span data-i18n="lbl.fhSpecify">Specify</span> <span class="key">(note)</span></label>' +
           '<input class="ctrl" type="text" data-fam="note" data-i18n-ph="ph.specify" placeholder="Free text"></div>' +
       '</div>' +
-      /* below it, the Patient section's identifying fields, minus sex and life status */
-      '<div class="grid align-end famids">' +
+      /* the opt-in, then the Patient section's identifying fields it reveals */
+      '<div class="famfoot">' +
+        '<label class="check" data-fam-seq><span class="box"></span><span data-i18n="lbl.inclSeq">Include in the genetic analysis</span></label>' +
+      '</div>' +
+      '<div class="famseq" hidden><div class="grid align-end">' +
         '<div class="f"><label><span data-i18n="lbl.patientId">Identifier (MRN, study code, …)</span> <span class="req">*</span> <span class="key">(submitter_patient_id)</span></label>' +
           '<input class="ctrl" type="text" data-i18n-ph="ph.idValue" placeholder="Identifier value" data-fam-seq-id></div>' +
         '<div class="f"><label><span data-i18n="lbl.issuing">Patient organization</span> <span class="req">*</span> <span class="key">(patient_organization_code)</span><sup class="fn">8</sup></label>' +
@@ -20858,18 +20794,33 @@
           '<input class="ctrl" type="text" data-i18n-ph="ph.optional" placeholder="Optional" data-fam-seq-first></div>' +
         '<div class="f"><label><span data-i18n="lbl.lastName">Last name</span> <span class="key">(last_name)</span></label>' +
           '<input class="ctrl" type="text" data-i18n-ph="ph.optional" placeholder="Optional" data-fam-seq-last></div>' +
-      '</div>';
+      '</div></div>';
     var rel = row.querySelector('[data-fam="relation"]');
     rel.addEventListener('click', function(){
       openMenu(rel, famRelationItems(row), rel.classList.contains('filled')?rel.dataset.value:null, function(v){
         famApplyRelation(row, v);
       }, {search:false});
     });
-    var statusSeg = row.querySelector('[data-fam-seg="status"]');
-    statusSeg.addEventListener('click', function(e){
-      var span = e.target.closest('span'); if(!span) return;
-      Array.prototype.forEach.call(statusSeg.children, function(sp){ sp.classList.remove('on'); });
-      span.classList.add('on');
+    /* sex and affected status behave alike: pick one, repaint the tree */
+    row.querySelectorAll('.famtop .seg').forEach(function(seg){
+      seg.addEventListener('click', function(e){
+        var span = e.target.closest('span'); if(!span) return;
+        Array.prototype.forEach.call(seg.children, function(sp){ sp.classList.remove('on'); });
+        span.classList.add('on');
+        renderPedigree();
+      });
+    });
+    /* the opt-in: ticking it reveals the patient block and hands the row the proband's org;
+       unticking clears the errors it may have raised, and emptyFamSeq drops what was typed */
+    var seq = row.querySelector('[data-fam-seq]');
+    seq.addEventListener('click', function(){
+      var on = seq.classList.toggle('on');
+      var box = row.querySelector('.famseq');
+      if(on){ box.removeAttribute('hidden'); syncFamilyOrg(); }
+      else {
+        box.setAttribute('hidden','');
+        emptyFamSeq(row);
+      }
     });
     /* issuing site defaults to the proband's org (via syncFamilyOrg) but is editable;
        a manual pick sets 'overridden' so it no longer follows the proband */
@@ -20885,7 +20836,7 @@
     row.querySelector('[data-fam-seq-id]').addEventListener('input', function(){ clearFieldError(this); });
     row.querySelector('[data-fam-seq-dob]').addEventListener('input', function(){ clearFieldError(this); });
     row.querySelector('.famx').addEventListener('click', function(){
-      row.remove(); sumFamily();
+      row.remove(); sumFamily(); renderPedigree();
     });
     famList.appendChild(row);
     localize(row);   // translate the new row's labels/placeholders into the current language
@@ -20895,7 +20846,15 @@
     if(preset) famApplyRelation(row, preset);
     syncFamilyOrg();   // a relative inherits the proband's patient organization (editable after)
     sumFamily();
+    renderPedigree();
   });
+  /* a member taken out of the analysis leaves nothing behind: the block is cleared, not just
+     hidden, so an identifier typed and then untickd can never reach the case */
+  function emptyFamSeq(row){
+    row.querySelectorAll('.famseq input').forEach(function(el){ el.value = ''; clearFieldError(el); });
+    var org = row.querySelector('[data-fam-seq-org]');
+    if(org){ delete org.dataset.overridden; clearFieldError(org); }
+  }
   function sumFamily(){
     var n = famList.children.length, el = document.getElementById('sum-family');
     el.textContent = n === 0 ? t('members.zero') : t(n === 1 ? 'members.one' : 'members.many', { n:n });
@@ -20914,18 +20873,20 @@
 
   /* ---------- live pedigree, drawn from the proband + placeable family members ----------
      Standard notation: ■ male · ● female · ◆ unknown sex · filled = affected · ? = unknown ·
-     proband arrow · deceased slash · double mating line = consanguineous · ring = sequenced.
-     Half-siblings / "Other" can't be auto-placed, so they're listed, not drawn. */
+     proband arrow · deceased slash · double mating line = consanguineous.
+     Every member with a relationship is drawn, whether or not they are in the analysis — this
+     is a picture of the family, not of the sequencing batch. Half-siblings / "Other" can't be
+     auto-placed, so they're listed, not drawn. */
   function renderPedigree(){
     var host = document.getElementById('pedigree');
-    if(!host) return;   // pedigree removed with the 2026-09-08 family redesign; callers are harmless
+    if(!host) return;
     var parents=[], sibs=[], kids=[], other=[];
     famList.querySelectorAll('.frow').forEach(function(row){
       var rel = row.querySelector('[data-fam="relation"]');
       if(!rel || !rel.classList.contains('filled')) return;
       var relation = rel.dataset.value;   // canonical (English) — display label may be translated
       var sexOn = row.querySelector('[data-fam-seg="sex"] .on');
-      var affOn = row.querySelector('.seg:not([data-fam-seg]) .on');
+      var affOn = row.querySelector('[data-fam-seg="status"] .on');
       var node = { relation:relation, sex: sexOn?sexOn.dataset.val:'U',
                    aff: affOn?affOn.dataset.val:'Unknown' };
       if(relation==='Mother'||relation==='Father') parents.push(node);
@@ -21128,11 +21089,14 @@
       if(chev) chev.textContent = sec.classList.contains('collapsed') ? t('ui.expand') : t('ui.collapse');
     });
   }
-  /* every relative added to the family analysis is being sequenced, so each needs a real
-     identifier, patient organization and date of birth. Everything else is the core gate. */
+  /* a relative only reported as family history needs nothing beyond the top line; one ticked
+     into the analysis becomes a Patient, so it needs a real identifier, patient organization
+     and date of birth. Everything else is the core gate. */
   function validateConditionals(){
     var problems = [];
     famList.querySelectorAll('.frow').forEach(function(row){
+      var seq = row.querySelector('[data-fam-seq]');
+      if(!seq || !seq.classList.contains('on')) return;   // reported only — nothing to validate
       var idc = row.querySelector('[data-fam-seq-id]');
       var org = row.querySelector('[data-fam-seq-org]');
       var dob = row.querySelector('[data-fam-seq-dob]');
