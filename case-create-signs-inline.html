@@ -316,8 +316,9 @@
   #signs-block .mhint{margin:6px 0 0}
   #signs-block .showmore{margin:0}
   #signs-block .negrow{margin-top:16px;border-top:1px solid var(--line-soft);padding-top:16px}
-  #signs-block .negrow .check{height:auto;font-size:12px;font-weight:500;color:var(--ink)}
-  #signs-block #negsigns-body{margin-top:12px}
+  /* the head only appears once something is picked, so the button carries the top margin
+     when the list is empty and loses it when the badges push it down */
+  #signs-block .negrow .divlabel{margin-top:0}
   .modal .msearch{position:relative;margin-bottom:6px}
   .modal .msearch input{width:100%}
   /* checkbox picklist rows — reuse .check/.chip vocabulary */
@@ -355,6 +356,20 @@
   .prow .onset[hidden]{display:none}
   /* a picked term is not a checkbox any more: a marker says which list it is in — green ✓ for
      observed, red ✗ for not observed — and an ✕ on the right drops it */
+  .badgelist{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 4px}
+  .badgelist:empty{display:none}
+  .negbadge{display:inline-flex;align-items:center;gap:8px;max-width:100%;
+        padding:5px 10px 5px 14px;border:1px solid #dbb9a8;border-radius:999px;background:#fff;
+        color:var(--req);font-size:12px;line-height:1.5;text-decoration:none}
+  .negbadge .bname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .negbadge .bx{flex:0 0 auto;cursor:pointer;opacity:.7;font-size:12px;line-height:1}
+  .negbadge .bx:hover{opacity:1}
+  .negbadge .bx:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+  /* the add button is a quiet text control, not a dashed drop zone: it opens a modal */
+  .addlink{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:6px 2px;
+        font:inherit;font-size:12px;font-weight:500;color:var(--accent);cursor:pointer}
+  .addlink:hover{text-decoration:underline}
+  .addlink .plus{font-size:13px;line-height:1}
   .prow .pmark{flex:0 0 auto;width:16px;text-align:center;font-size:13px;line-height:1}
   .prow .pmark.obs{color:#3f8f5f}
   .prow .pmark.neg{color:var(--req)}
@@ -588,25 +603,15 @@
             <p class="divlabel" id="sugg-head"><span data-i18n="dlg.suggestions">Suggestions for this analysis</span></p>
             <div class="hpo-picklist" id="suggestions"></div>
             <button type="button" class="showmore" id="sugg-showmore" hidden></button>
-            <!-- not-observed signs: same shape as the observed block above — the ask, what is
-                 already picked, then a search row with the tree button (2026-09-08) -->
+            <!-- not-observed signs (reworked 2026-09-10): no opt-in checkbox and no inline
+                 search — a single button opens the HPO browser, and what comes back shows as
+                 dismissable badges. The observed block keeps its search + suggestions because
+                 that is the required list you work through; this one is a short aside, so the
+                 modal is the only way in and the badges are the whole of its UI. -->
             <div class="negrow">
-              <!-- the ask is a checkbox: unchecked, the block is one line; checked, it opens the
-                   search row and whatever has been picked (2026-09-08) -->
-              <label class="check" data-check="negsigns"><span class="box"></span><span data-i18n="dlg.negInstruction">NOT-OBSERVED phenotypes (optional)</span></label>
-              <div id="negsigns-body" hidden>
               <p class="divlabel" id="neg-sel-head" hidden><span data-i18n="dlg.negSelected">Not-observed phenotypes</span> <span class="cnt" id="neg-sel-count"></span></p>
-              <div class="hpo-picklist" id="neg-selected"></div>
-              <div class="msearchrow">
-                <div class="msearchbox">
-                  <input class="ctrl" type="text" id="neg-search" data-i18n-ph="ph.browseHpo" placeholder="Search a phenotype (name or HP:…)">
-                  <button type="button" class="searchx" id="neg-search-x" data-i18n-title="ui.clearSearch" title="Clear the search">✕</button>
-                </div>
-                <button type="button" class="treebtn" id="browse-neg-btn"><svg class="tico" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="4.4"/><line x1="10.6" y1="10.6" x2="14" y2="14"/></svg> <span data-i18n="tree.title">Browse the HPO tree</span></button>
-              </div>
-              <div class="hpo-picklist" id="neg-search-results"></div>
-              <p class="mhint" id="neg-search-hint" hidden></p>
-              </div>
+              <div class="badgelist" id="neg-selected"></div>
+              <button type="button" class="addlink" id="neg-add-btn"><span class="plus" aria-hidden="true">＋</span> <span data-i18n="dlg.negAdd">NOT-OBSERVED phenotypes</span></button>
             </div>
           </div>
 
@@ -19630,7 +19635,7 @@
       'btn.hpoTree':'HPO tree', 'tree.title':'Browse the HPO tree',
       'mondo.title':'Browse the MONDO tree', 'mondo.search':'Search an indication (name or MONDO:…)',
       'mondo.note':'The mock lists the catalog’s conditions; the real browser would show the MONDO hierarchy.', 'tree.apply':'Apply',
-      'dlg.negInstruction':'NOT-OBSERVED phenotypes (optional)',
+      'dlg.negAdd':'NOT-OBSERVED phenotypes',
       'tree.minChars':'Type at least 3 characters to search the tree.', 'tree.noResults':'No matching term.',
       'tree.selected':'{n} selected', 'tree.tooMany':'Too many matches — refine your search.',
       'dlg.noAnalysis':'Select an analysis first to see suggestions.',
@@ -19719,7 +19724,7 @@
       'btn.hpoTree':'Arbre HPO', 'tree.title':'Parcourir l’arbre HPO',
       'mondo.title':'Parcourir l’arbre MONDO', 'mondo.search':'Rechercher une indication (nom ou MONDO:…)',
       'mondo.note':'La maquette liste les conditions du catalogue ; le vrai navigateur montrerait la hiérarchie MONDO.', 'tree.apply':'Appliquer',
-      'dlg.negInstruction':'Phénotypes NON OBSERVÉS (facultatif)',
+      'dlg.negAdd':'Phénotypes NON OBSERVÉS',
       'tree.minChars':'Saisissez au moins 3 caractères pour chercher dans l’arbre.', 'tree.noResults':'Aucun terme correspondant.',
       'tree.selected':'{n} sélectionné(s)', 'tree.tooMany':'Trop de résultats — précisez votre recherche.',
       'dlg.noAnalysis':'Sélectionnez d’abord une analyse pour voir des suggestions.',
@@ -20371,10 +20376,10 @@
       e.preventDefault();
       /* picking from the search answers it: empty the box (renderPheno then clears the results
          and hides the ✕) and hand the focus back for the next sign */
-      var fromSearch = !!q, input = document.getElementById(searchIds(mode).input);
-      if(fromSearch) input.value = '';
+      var fromSearch = !!q, input = fromSearch ? document.getElementById(searchIds().input) : null;
+      if(input) input.value = '';
       if(mode==='observed') toggleObserved(id); else toggleNegative(id);
-      if(fromSearch) input.focus();
+      if(input) input.focus();
     }); }
     if(mode==='observed'){
       if(checked) row.classList.add('onsetrow');    // an onset on the right: the name ellipsizes
@@ -20414,12 +20419,12 @@
   /* free-text search over the whole ontology, borrowed from version A's picker. Both lists have
      one: it offers only what is not already on screen — nothing already picked in that list, and
      for the observed one, nothing already in the suggestions. */
-  function searchIds(mode){ return mode === 'observed'
-    ? { input:'pheno-search', cont:'pheno-search-results', hint:'pheno-search-hint', x:'pheno-search-x' }
-    : { input:'neg-search',   cont:'neg-search-results',   hint:'neg-search-hint',   x:'neg-search-x' }; }
-  function renderSearchResults(mode){
-    mode = mode || 'observed';
-    var ids   = searchIds(mode);
+  /* only the observed list has an inline search; the not-observed one is picked in the modal */
+  function searchIds(){ return { input:'pheno-search', cont:'pheno-search-results',
+                                 hint:'pheno-search-hint', x:'pheno-search-x' }; }
+  function renderSearchResults(){
+    var mode  = 'observed';
+    var ids   = searchIds();
     var input = document.getElementById(ids.input);
     var cont  = document.getElementById(ids.cont);
     var hint  = document.getElementById(ids.hint);
@@ -20446,7 +20451,27 @@
     document.getElementById('neg-sel-head').hidden = ids.length === 0;
     document.getElementById('neg-sel-count').textContent = ids.length ? '('+ids.length+')' : '';
     var cont = document.getElementById('neg-selected'); cont.innerHTML = '';
-    ids.forEach(function(id){ cont.appendChild(makeSelRow(id, 'negative')); });
+    ids.forEach(function(id){ cont.appendChild(makeNegBadge(id)); });
+  }
+  /* A not-observed term is a badge, not a row: there is no onset to carry and no checkbox to
+     show, so the term and its ✕ are the whole of it. Deliberately NOT struck through — the
+     block already says these signs were looked for and absent, whereas struck-through text
+     reads as "removed from the list" (2026-09-10). */
+  function makeNegBadge(id){
+    var b = document.createElement('span'); b.className = 'negbadge';
+    var nm = document.createElement('span'); nm.className = 'bname'; nm.dataset.pheno = id;
+    nm.textContent = termLabel(id); nm.title = termLabel(id) + ' · ' + id;
+    b.appendChild(nm);
+    var x = document.createElement('span'); x.className = 'bx';
+    x.setAttribute('role','button'); x.setAttribute('tabindex','0');
+    x.setAttribute('data-i18n-title','ui.removeSign'); x.title = t('ui.removeSign');
+    x.setAttribute('aria-label', t('ui.removeSign') + ' — ' + termLabel(id));
+    x.textContent = '✕';
+    x.addEventListener('click', function(){ toggleNegative(id); });
+    x.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleNegative(id); } });
+    b.appendChild(x);
+    return b;
   }
   /* A term that has been picked is no longer a choice to make, so it drops the checkbox: the
      marker on the left says which list it is in (green ✓ observed, red ✗ not observed) and the ✕
@@ -20486,8 +20511,8 @@
     row.appendChild(x);
     return row;
   }
-  function renderPheno(){ renderObservedSelected(); renderSuggestions(); renderSearchResults('observed');
-                          renderNegSelected(); renderSearchResults('negative'); }
+  function renderPheno(){ renderObservedSelected(); renderSuggestions(); renderSearchResults();
+                          renderNegSelected(); }
   function sumPheno(){
     var n = pheno.observed.length + pheno.negative.length;
     var el = document.getElementById('sum-pheno');
@@ -20497,38 +20522,21 @@
 
   /* --- wire the inline picker (the two buttons open the browser modal) --- */
   document.getElementById('browse-obs-btn').addEventListener('click', function(){ openTree('observed'); });
-  document.getElementById('browse-neg-btn').addEventListener('click', function(){ openTree('negative'); });
+  document.getElementById('neg-add-btn').addEventListener('click', function(){ openTree('negative'); });
   document.getElementById('sugg-showmore').addEventListener('click', function(){ suggExpanded = !suggExpanded; renderSuggestions(); });
-  ['observed','negative'].forEach(function(mode){
-    var ids = searchIds(mode);
-    document.getElementById(ids.input).addEventListener('input', debounce(function(){ renderSearchResults(mode); }, 180));
+  (function(){
+    var ids = searchIds();
+    document.getElementById(ids.input).addEventListener('input', debounce(renderSearchResults, 180));
     document.getElementById(ids.x).addEventListener('click', function(){
       var input = document.getElementById(ids.input);
-      input.value = ''; renderSearchResults(mode); input.focus();
+      input.value = ''; renderSearchResults(); input.focus();
     });
-  });
+  })();
   document.addEventListener('keydown', function(e){
     if(e.key !== 'Escape') return;
     if(!document.getElementById('hpo-tree-modal').hasAttribute('hidden')){ closeTree(); return; }
     if(!document.getElementById('mondo-modal').hasAttribute('hidden')) closeMondo();
   });
-
-  /* the not-observed half opens on demand; closing it drops what was picked, so nothing hidden
-     ends up in the case */
-  (function(){
-    var box  = document.querySelector('[data-check="negsigns"]');
-    var body = document.getElementById('negsigns-body');
-    box.addEventListener('click', function(){
-      var on = box.classList.toggle('on');
-      if(on){ body.removeAttribute('hidden'); }
-      else {
-        body.setAttribute('hidden','');
-        document.getElementById('neg-search').value = '';
-        if(pheno.negative.length){ pheno.negative = []; renderPheno(); sumPheno(); }
-        else renderSearchResults('negative');
-      }
-    });
-  })();
 
   /* ---------- the indication field is a typeahead, same shape as the phenotype searches ----------
      Type, pick from the list, ✕ to clear. The canonical value lives in data-value; the input

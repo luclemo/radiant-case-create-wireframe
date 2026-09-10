@@ -144,9 +144,11 @@ section**, driven by the checkbox in section 1.
 **3 · Signes cliniques** — the ask, then « Phénotypes observés (n) » (each row: green ✓, term,
 HP id, onset menu, ✕), the search row (HPO search + « Parcourir l'arbre HPO »), then
 « Suggestions pour cette analyse » (two columns read top to bottom, 6 shown, « Afficher n de
-plus »). A rule, then a **checkbox** « Sélectionnez des phénotypes NON OBSERVÉS pertinents
-(facultatif) » that reveals the same shape for the not-observed list (red ✗ instead of ✓, no
-onset). Vertical rhythm inside the block: **12 px** under an instruction, **16 px** before a
+plus »). A rule, then the not-observed half, **reworked on 2026-09-10**: « Phénotypes non
+observés (n) », the picks as dismissable badges, and one button « ＋ Phénotypes NON OBSERVÉS »
+(`#neg-add-btn`) that opens the HPO browser. It has no checkbox and no inline search — the modal
+is the only way in, because this list is a short aside rather than the required list you work
+through. Vertical rhythm inside the block: **12 px** under an instruction, **16 px** before a
 sub-heading, **6 px** under one.
 
 **4 · Autres informations cliniques (facultatives)** — Consanguinité | Ethnicité(s) (multi-valued,
@@ -197,11 +199,20 @@ room; it is not clipped.
   of the actual selection comes back.
 - **Ethnicity is the one multi-valued control**: `bindMultiSelect()` stores the picks
   pipe-separated in `dataset.values` and paints them as removable chips inside the control.
-- **Two kinds of phenotype row**: `makePRow(id, mode, q)` for a list you pick *from* (checkbox,
-  optional match highlight), `makeSelRow(id, mode)` for a term already picked (✓/✗ marker, onset
-  for observed, ✕ to drop). A picked term never appears in both.
-- **Blocks that open behind a checkbox clear themselves when closed** — prenatal fields, family
-  history, not-observed phenotypes. Nothing hidden should end up in the case.
+- **Three ways a phenotype is drawn**: `makePRow(id, mode, q)` for a list you pick *from*
+  (checkbox, optional match highlight), `makeSelRow(id, mode)` for a picked observed term (✓,
+  onset menu, ✕), and `makeNegBadge(id)` for a picked not-observed one — a pill with the term
+  and a ✕, no checkbox and no onset. A picked term never appears in two places.
+- **Not-observed badges are deliberately not struck through** (2026-09-10). The block heading
+  already says these signs were looked for and absent; struck-through text reads as "removed
+  from the list" instead. The earlier strikethrough chips were dropped for the same reason.
+- **Only the observed list has an inline search.** `searchIds()` and `renderSearchResults()`
+  take no mode — they are observed-only since 2026-09-10. `makePRow`'s negative branch survives
+  but nothing reaches it any more.
+- **Blocks that open behind a checkbox clear themselves when closed** — prenatal fields and the
+  family member's identification block. Nothing hidden should end up in the case. The
+  not-observed list no longer works this way: it has no checkbox, so its badges are dropped one
+  at a time and never wholesale.
 - **Reviewer annotations** — the `field_code` hints, footnotes `note.1`…`note.8` and the
   `.notes-legend` block — are toggled by the **Codes** button (`#docs-toggle`, flips
   `body.hide-docs`), hidden by default. When a label is dropped, its annotations move to whatever
