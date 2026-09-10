@@ -141,10 +141,12 @@ line spanning the row, then RAMQ | Date de naissance\*, Sexe\* | Statut vital\*,
 prenatal-only block (sexe fœtal, âge gestationnel, dates DDM/DPA) opens at the **end of this
 section**, driven by the checkbox in section 1.
 
-**3 · Signes cliniques** — the ask, then « Phénotypes observés (n) » (each row: green ✓, term,
-HP id, onset menu, ✕), the search row (HPO search + « Parcourir l'arbre HPO »), then
-« Suggestions pour cette analyse » (two columns read top to bottom, 6 shown, « Afficher n de
-plus »). A rule, then the not-observed half, **reworked on 2026-09-10**: « Phénotypes non
+**3 · Signes cliniques** — the ask, then the search row (HPO search + « Parcourir l'arbre HPO »)
+**directly under it**, then « Phénotypes observés (n) » and « Suggestions pour cette analyse »
+below — **one column, 5 shown, « Afficher n de plus »** (both reworked 2026-09-10; the
+suggestions were briefly two columns of 14). Every row in this section is the same checklist
+row: checkbox, term, HP id, and — once ticked, and only for observed — an onset menu. A rule,
+then the not-observed half, **also reworked on 2026-09-10**: « Phénotypes non
 observés (n) », the picks as dismissable badges, and one button « ＋ Phénotypes NON OBSERVÉS »
 (`#neg-add-btn`) that opens the HPO browser. It has no checkbox and no inline search — the modal
 is the only way in, because this list is a short aside rather than the required list you work
@@ -199,10 +201,20 @@ room; it is not clipped.
   of the actual selection comes back.
 - **Ethnicity is the one multi-valued control**: `bindMultiSelect()` stores the picks
   pipe-separated in `dataset.values` and paints them as removable chips inside the control.
-- **Three ways a phenotype is drawn**: `makePRow(id, mode, q)` for a list you pick *from*
-  (checkbox, optional match highlight), `makeSelRow(id, mode)` for a picked observed term (✓,
-  onset menu, ✕), and `makeNegBadge(id)` for a picked not-observed one — a pill with the term
-  and a ✕, no checkbox and no onset. A picked term never appears in two places.
+- **Two ways a phenotype is drawn.** `makePRow(id, mode, q)` is the one checklist row used
+  everywhere an observed term appears — suggestions, search results and the picked list alike.
+  Selection is the row's own **active/inactive state** (`label.check.on`, the accent-filled
+  box), so a term is dropped by unticking it; there is no ✓/✗ marker and no row ✕ to learn.
+  `makeNegBadge(id)` draws a picked not-observed term as a pill with a ✕. `makeSelRow` was
+  deleted on 2026-09-10 — it was the ✓-marker row, and nothing needed a second vocabulary.
+  A picked term never appears in two places: it leaves the suggestions for the picked list.
+- **Suggestions are one column with a 5-item cut** (2026-09-10). Two columns forced the eye to
+  pick a scan direction before it could read, and five rows plus « Afficher n de plus » is a
+  shorter first impression. `#suggestions` no longer sets `columns`, so the old
+  read-top-to-bottom rule and its 860px single-column media query are both gone.
+- **The two ways in stay pinned under the ask** — type-ahead and « Parcourir l'arbre HPO » sit
+  immediately below the instruction, above the picked list, so they don't move as terms
+  accumulate.
 - **Not-observed badges are deliberately not struck through** (2026-09-10). The block heading
   already says these signs were looked for and absent; struck-through text reads as "removed
   from the list" instead. The earlier strikethrough chips were dropped for the same reason.

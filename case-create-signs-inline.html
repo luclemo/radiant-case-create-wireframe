@@ -326,10 +326,11 @@
   /* the analysis suggestions are a short, scannable list: two columns read top to bottom, so
      CSS columns rather than a grid — a grid would fill left to right. One column on narrow
      screens. Rows must not split across the fold. */
-  #suggestions{display:block;columns:2;column-gap:14px}
-  #suggestions .prow{break-inside:avoid;margin-bottom:2px}
+  /* one column again (2026-09-10): two columns read badly — the eye has to choose a direction
+     before it can scan — and five rows plus a "show more" is a shorter first impression. */
+  #suggestions{display:block}
+  #suggestions .prow{margin-bottom:2px}
   #suggestions:empty{display:none}   /* the id would otherwise beat .hpo-picklist:empty */
-  @media(max-width:860px){#suggestions{columns:1}}
   .hpo-picklist:empty{display:none}
   .prow{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:6px}
   .prow:hover{background:var(--box)}
@@ -370,12 +371,6 @@
         font:inherit;font-size:12px;font-weight:500;color:var(--accent);cursor:pointer}
   .addlink:hover{text-decoration:underline}
   .addlink .plus{font-size:13px;line-height:1}
-  .prow .pmark{flex:0 0 auto;width:16px;text-align:center;font-size:13px;line-height:1}
-  .prow .pmark.obs{color:#3f8f5f}
-  .prow .pmark.neg{color:var(--req)}
-  .prow .pterm{display:flex;align-items:center;gap:9px;min-width:0;flex:1 1 auto}
-  .prow .prowx{flex:0 0 auto;margin-left:10px;color:var(--faint);font-size:12px;line-height:1;cursor:pointer}
-  .prow .prowx:hover{color:var(--req)}
   .msubhead{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin:16px 0 4px;
         display:flex;align-items:center;gap:8px}
   .msubhead .req{color:var(--req)}
@@ -589,8 +584,8 @@
             <!-- no "Clinical signs" title: the instruction says it better, and carries the field
                  codes and footnote the title used to hold (2026-09-08) -->
             <p class="instr"><span data-i18n="dlg.instruction">Select at least one OBSERVED phenotype with its onset</span> <span class="req">*</span> <span class="key">(observed_phenotypes · non_observed_phenotypes)</span><sup class="fn">7</sup></p>
-            <p class="divlabel" id="obs-sel-head" hidden><span data-i18n="dlg.observedSelected">Observed phenotypes</span> <span class="cnt" id="obs-sel-count"></span></p>
-            <div class="hpo-picklist" id="observed-selected"></div>
+            <!-- the two ways in — type-ahead and the tree — sit directly under the ask and stay
+                 put (2026-09-10). What has been picked, and the suggestions, follow below. -->
             <div class="msearchrow">
               <div class="msearchbox">
                 <input class="ctrl" type="text" id="pheno-search" data-i18n-ph="ph.browseHpo" placeholder="Search a phenotype (name or HP:…)">
@@ -600,6 +595,8 @@
             </div>
             <div class="hpo-picklist" id="pheno-search-results"></div>
             <p class="mhint" id="pheno-search-hint" hidden></p>
+            <p class="divlabel" id="obs-sel-head" hidden><span data-i18n="dlg.observedSelected">Observed phenotypes</span> <span class="cnt" id="obs-sel-count"></span></p>
+            <div class="hpo-picklist" id="observed-selected"></div>
             <p class="divlabel" id="sugg-head"><span data-i18n="dlg.suggestions">Suggestions for this analysis</span></p>
             <div class="hpo-picklist" id="suggestions"></div>
             <button type="button" class="showmore" id="sugg-showmore" hidden></button>
@@ -20403,7 +20400,10 @@
     document.getElementById('obs-sel-head').hidden = ids.length === 0;
     document.getElementById('obs-sel-count').textContent = ids.length ? '('+ids.length+')' : '';
     var cont = document.getElementById('observed-selected'); cont.innerHTML = '';
-    ids.forEach(function(id){ cont.appendChild(makeSelRow(id, 'observed')); });
+    /* the same checklist row as the suggestions and the search: a picked term reads as a
+       ticked checkbox and is dropped by unticking it, so there is no second vocabulary of
+       ✓ markers and ✕ buttons to learn (2026-09-10) */
+    ids.forEach(function(id){ cont.appendChild(makePRow(id, 'observed')); });
   }
   function renderSuggestions(){
     var cont = document.getElementById('suggestions'); cont.innerHTML = '';
@@ -20412,7 +20412,7 @@
     var ordered = suggestionsFor(analysisCode()).filter(function(id){ return !phHas('observed', id); }).sort(byLabel);
     document.getElementById('sugg-head').hidden = ordered.length === 0;
     if(!ordered.length) return;
-    var LIMIT = 14;     // two columns, seven rows
+    var LIMIT = 5;      // one column: five rows, then "show n more"
     (suggExpanded ? ordered : ordered.slice(0, LIMIT)).forEach(function(id){ cont.appendChild(makePRow(id, 'observed')); });
     if(ordered.length > LIMIT){ more.hidden = false; more.textContent = suggExpanded ? t('dlg.showLess') : t('dlg.showMore', { n:ordered.length-LIMIT }); }
   }
@@ -20472,44 +20472,6 @@
       if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleNegative(id); } });
     b.appendChild(x);
     return b;
-  }
-  /* A term that has been picked is no longer a choice to make, so it drops the checkbox: the
-     marker on the left says which list it is in (green ✓ observed, red ✗ not observed) and the ✕
-     on the right takes it out. Both lists read the same way; only the marker and the onset differ. */
-  function makeSelRow(id, mode){
-    var row = document.createElement('div'); row.className = 'prow' + (mode === 'observed' ? ' onsetrow' : '');
-    var term = document.createElement('span'); term.className = 'pterm';
-    var mark = document.createElement('span');
-    mark.className = 'pmark ' + (mode === 'observed' ? 'obs' : 'neg');
-    mark.setAttribute('aria-hidden', 'true');
-    mark.textContent = mode === 'observed' ? '✓' : '✗';
-    term.appendChild(mark);
-    var nm = document.createElement('span'); nm.className = 'pname'; nm.dataset.pheno = id;
-    nm.title = termLabel(id); nm.textContent = termLabel(id); term.appendChild(nm);
-    var ids2 = document.createElement('span'); ids2.className = 'pid'; ids2.textContent = id; term.appendChild(ids2);
-    row.appendChild(term);
-    if(mode === 'observed'){
-      var onset = document.createElement('div'); onset.className = 'onset';
-      var olab = document.createElement('label'); olab.setAttribute('data-i18n','lbl.onset'); olab.textContent = t('lbl.onset');
-      var mini = document.createElement('div'); mini.className = 'mini select'; mini.tabIndex = 0; mini.dataset.onset = '';
-      var cur = onsetOf(id);
-      mini.dataset.value = cur; mini.textContent = ageLabel(cur);
-      mini.addEventListener('click', function(){ openMenu(mini, ageMenuItems(), mini.dataset.value, function(v){
-        mini.dataset.value = v; mini.textContent = ageLabel(v); setOnset(id, v);
-      }); });
-      onset.appendChild(olab); onset.appendChild(mini);
-      row.appendChild(onset);
-    }
-    var x = document.createElement('span'); x.className = 'prowx';
-    x.setAttribute('role', 'button'); x.setAttribute('tabindex', '0');
-    x.setAttribute('data-i18n-title', 'ui.removeSign'); x.title = t('ui.removeSign');
-    x.setAttribute('aria-label', t('ui.removeSign') + ' — ' + termLabel(id));
-    x.textContent = '✕';
-    function drop(){ if(mode === 'observed') toggleObserved(id); else toggleNegative(id); }
-    x.addEventListener('click', drop);
-    x.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); drop(); } });
-    row.appendChild(x);
-    return row;
   }
   function renderPheno(){ renderObservedSelected(); renderSuggestions(); renderSearchResults();
                           renderNegSelected(); }
