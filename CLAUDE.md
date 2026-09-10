@@ -251,10 +251,25 @@ room; it is not clipped.
 - **The identifier leads section 2**, labelled « Identifiant (numéro de dossier médical, code de
   l'étude, …) »; the id-type dropdown (MRN / Other) is gone, proband and family row alike. The
   existing-patient lookup therefore keys on **organization + identifier**: it fires whenever that
-  pair is complete, whichever half moved last, re-fires when either changes, and says which field
-  it is waiting for. Mocked in `PATIENT_DB`, one record behind a 700 ms delay — **1234** at
-  Sainte-Justine prefills health number, names, sex and date of birth; anything else reports
-  "nouveau patient" and takes back only what the lookup itself wrote.
+  pair is complete, whichever half moved last, and re-fires when either changes. Mocked in
+  `PATIENT_DB`, one record behind a 700 ms delay — **1234** at Sainte-Justine; anything else
+  reports "nouveau patient" and takes back only what the lookup itself wrote. While the pair is
+  incomplete the line says **nothing** — the two nags (« Choisir l'établissement… » and
+  « champs préremplis, à vérifier ») were dropped on 2026-09-10.
+- **A found patient is confirmed before any PHI is written** (2026-09-10). The lookup no longer
+  fills the form on its own: a match opens `#patient-modal` showing the record in full — names,
+  sex, date of birth, RAMQ — and only « Utiliser ce patient » writes it. Full PHI, deliberately:
+  this dialog exists so a human can tell two siblings apart, and it is shown before anything
+  reaches the case, so a mistyped identifier fills nothing.
+- **Rejecting a match means the key is wrong, not "ignore that record".** Organization +
+  identifier is unique, so there is no coherent way to keep the identifier and enter a different
+  person — hence deliberately **no "use it anyway"** third button. « Ce n'est pas le bon
+  patient » (also ✕, Esc and a backdrop click, all of which write nothing) marks the identifier
+  in error, warns on the lookup line, returns focus to the field and **blocks Create** while
+  leaving Save draft alone. What the user typed is never erased: they may have one digit wrong
+  and need to see it. `lookupDecision` records one answer per key, so a key you already answered
+  for is never asked again — and a rejected key keeps its warning rather than re-opening the
+  modal in a loop.
 - **HPO search is scoped to the displayed language**: each term carries `_ffr` and `_fen`
   haystacks and both the inline searches and the tree read the one matching `lang`. Searching
   "hearing" in French returns nothing, on purpose. The HP id is in both haystacks.

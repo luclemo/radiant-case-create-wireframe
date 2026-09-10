@@ -104,12 +104,21 @@
   /* inline validation for conditionally-required fields (surfaced only at submit) */
   .ctrl.err{border-color:var(--req)}
   .fielderr{display:block;margin-top:4px;font-size:11px;color:var(--req)}
+  /* the confirmation modal's record read-out: label / value pairs, values in ink so the PHI
+     is the thing you read. Narrower than the tree modal — it is a short question. */
+  .pmodal{max-width:440px}
+  .pmkey{font-size:11px;color:var(--faint);margin:0 0 14px;padding-bottom:10px;
+        border-bottom:1px solid var(--line-soft)}
+  .pmrec{display:grid;grid-template-columns:max-content 1fr;gap:8px 18px;margin:0;font-size:12.5px}
+  .pmrec dt{color:var(--mut)}
+  .pmrec dd{margin:0;color:var(--ink);font-weight:500}
+
   /* existing-patient lookup status, under the identifier */
   /* always in flow, empty or not: the row below must not move when a message appears */
   /* negative margins pull the line into the row gap above and below, so the status text costs
      the row only its own height instead of a full extra grid row */
   .lookup{grid-column:1/-1;min-height:15px;line-height:15px;margin:-10px 0 -6px;font-size:11px;color:var(--faint)}
-  .lookup.found{color:var(--accent);font-weight:500}
+  .lookup.warn{color:var(--req);font-weight:500}
   textarea.ctrl.area{line-height:1.4}
 
   /* checkbox — a single boolean, built in the same visual language as the controls */
@@ -720,6 +729,28 @@
   <!-- MONDO browser. The mock has no MONDO hierarchy on disk — only the 26 conditions the
        analysis catalog references — so this lists them flat, with the same search and the same
        chrome as the HPO tree. Plugging a real MONDO subtree in would keep this shell. -->
+  <!-- Existing-patient confirmation (2026-09-10). The lookup no longer fills PHI on its own:
+       a match is shown here first and only fills the form once the user says it is the right
+       patient. Rejecting means the key is wrong, not that the record should be ignored —
+       organization + identifier is unique, so there is deliberately no "use it anyway". -->
+  <div id="patient-modal" class="modal-overlay" hidden>
+    <div class="modal pmodal" role="dialog" aria-modal="true" aria-labelledby="pm-title" aria-describedby="pm-ask">
+      <header>
+        <h2 id="pm-title" data-i18n="pm.title">Existing patient found</h2>
+        <span class="mclose" id="pm-x" data-i18n-title="pm.reject" title="Not the right patient">✕</span>
+      </header>
+      <div class="mbody">
+        <p class="instr" id="pm-ask" data-i18n="pm.ask">Confirm this is the patient this case is for. Their details will fill the form.</p>
+        <p class="pmkey" id="pm-key"></p>
+        <dl class="pmrec" id="pm-rec"></dl>
+      </div>
+      <div class="mfoot">
+        <div class="cta ghost" id="pm-cancel" data-i18n="pm.reject">Not the right patient</div>
+        <div class="cta ready" id="pm-confirm" data-i18n="pm.confirm">Use this patient</div>
+      </div>
+    </div>
+  </div>
+
   <div id="mondo-modal" class="modal-overlay tree-layer" hidden>
     <div class="modal treemodal" role="dialog" aria-modal="true" aria-labelledby="mondo-title">
       <header>
@@ -19652,9 +19683,12 @@
       'ph.jhn':'RAMQ (QC) or regional JHN', 'ph.optional':'Optional', 'ph.dob':'YYYY-MM-DD',
       'ph.freetext':'Free text', 'ph.condition':'Search an indication (name or MONDO:…)',
       'lookup.searching':'Looking for an existing patient…',
-      'lookup.found':'Patient already known here — fields prefilled, check them.',
       'lookup.none':'No patient with this identifier here — new patient.',
-      'lookup.needSite':'Pick the patient organization to run the search.',
+      'lookup.unconfirmed':'Existing patient not confirmed — check the identifier or the organization.',
+      'pm.title':'Existing patient found',
+      'pm.ask':'Confirm this is the patient this case is for. Their details will fill the form.',
+      'pm.confirm':'Use this patient', 'pm.reject':'Not the right patient',
+      'err.unconfirmed':'Confirm the existing patient, or change the identifier',
       'ph.note':'Diagnostic hypothesis, results of paraclinical tests, or any other information relevant to the analysis of the case',
       'sex.M':'Male', 'sex.F':'Female', 'sex.U':'Unknown',
       'life.Alive':'Alive', 'life.Deceased':'Deceased', 'life.Unknown':'Unknown',
@@ -19741,9 +19775,12 @@
       'ph.jhn':'RAMQ (QC) ou NAM régional', 'ph.optional':'Facultatif', 'ph.dob':'AAAA-MM-JJ',
       'ph.freetext':'Texte libre', 'ph.condition':'Rechercher une indication (nom ou MONDO:…)',
       'lookup.searching':'Recherche d’un patient existant…',
-      'lookup.found':'Patient déjà connu à ce site — champs préremplis, à vérifier.',
       'lookup.none':'Aucun patient avec cet identifiant ici — nouveau patient.',
-      'lookup.needSite':'Choisir l’établissement du patient pour lancer la recherche.',
+      'lookup.unconfirmed':'Patient existant non confirmé — vérifiez l’identifiant ou l’établissement.',
+      'pm.title':'Patient existant trouvé',
+      'pm.ask':'Confirmez qu’il s’agit bien du patient visé par ce cas. Ses données rempliront le formulaire.',
+      'pm.confirm':'Utiliser ce patient', 'pm.reject':'Ce n’est pas le bon patient',
+      'err.unconfirmed':'Confirmez le patient existant, ou changez l’identifiant',
       'ph.note':'Hypothèse diagnostique, résultat d’examens para-cliniques ou toute autre information pertinente pour l’analyse du cas',
       'sex.M':'Masculin', 'sex.F':'Féminin', 'sex.U':'Inconnu',
       'life.Alive':'Vivant', 'life.Deceased':'Décédé', 'life.Unknown':'Inconnu',
@@ -20272,10 +20309,15 @@
   };
   var LOOKUP_DELAY = 700;
   var lookupTimer = null, lookupSeq = 0, autofilled = null;
-  function lookupNote(key, found){
+  /* One decision per organization+identifier key: 'confirmed' or 'rejected'. Keyed, not a flag,
+     so returning to a key you already answered for does not ask again — and so a rejected key
+     keeps its warning instead of re-opening the modal in a loop. */
+  var lookupDecision = {};
+  var pendingRec = null, pendingKey = null;
+  function lookupNote(key, warn){
     var el = document.getElementById('patient-lookup');
     el.classList.toggle('on', !!key);
-    el.classList.toggle('found', !!found);
+    el.classList.toggle('warn', !!warn);
     if(key){ el.setAttribute('data-i18n', key); el.textContent = t(key); }
     else { el.removeAttribute('data-i18n'); el.textContent = ''; }
   }
@@ -20307,22 +20349,95 @@
     setSexSeg(rec.sex);
     autofilled = rec;
   }
+  /* the identifier is only usable once a match has been confirmed — an identifier that names
+     an existing patient the user will not confirm is the wrong identifier, not a new one */
+  function lookupBlocked(){
+    var key = lookupKey();
+    return !!key && lookupDecision[key] === 'rejected';
+  }
   function runLookup(){
     clearTimeout(lookupTimer);
     var seq = ++lookupSeq;                 // anything still in flight is stale
     var key = lookupKey();
     if(key === ''){ clearAutofill(); lookupNote(null); recompute(); return; }
-    if(key === null){ lookupNote('lookup.needSite'); return; }
+    if(key === null){ lookupNote(null); return; }   // pair incomplete: say nothing, just wait
+    /* a key already answered for keeps its answer, so editing a name never re-asks */
+    if(lookupDecision[key] === 'rejected'){ lookupNote('lookup.unconfirmed', true); recompute(); return; }
+    if(lookupDecision[key] === 'confirmed'){ lookupNote(null); recompute(); return; }
     lookupNote('lookup.searching');
     lookupTimer = setTimeout(function(){
       if(seq !== lookupSeq) return;
       var rec = PATIENT_DB[key];
-      if(rec){ applyRecord(rec); lookupNote('lookup.found', true); }
+      /* a match is a question now, not an answer: nothing is written until it is confirmed */
+      if(rec){ openPatientModal(rec, key); }
       else { clearAutofill(); lookupNote('lookup.none'); }
       recompute();
     }, LOOKUP_DELAY);
   }
-  idInput.addEventListener('input', function(){ recompute(); runLookup(); });
+
+  /* ---------- confirming a found patient ----------
+     PHI is shown in full here because this is where a human tells two siblings apart; it is
+     shown BEFORE anything is written, so a mistyped identifier fills nothing. */
+  function openPatientModal(rec, key){
+    pendingRec = rec; pendingKey = key;
+    var org = key.split('|')[0], id = key.split('|')[1];
+    document.getElementById('pm-key').textContent = optLabel('issuing', org) + ' · ' + id;
+    var rows = [
+      ['lbl.firstName', rec.firstname], ['lbl.lastName', rec.lastname],
+      ['lbl.sex', t('sex.' + rec.sex)], ['lbl.dob', rec.dob], ['lbl.healthNo', rec.jhn]
+    ];
+    var dl = document.getElementById('pm-rec'); dl.innerHTML = '';
+    rows.forEach(function(r){
+      var dt = document.createElement('dt'); dt.setAttribute('data-i18n', r[0]); dt.textContent = t(r[0]);
+      var dd = document.createElement('dd'); dd.textContent = r[1];
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
+    lookupNote(null);
+    document.getElementById('patient-modal').removeAttribute('hidden');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('pm-confirm').focus();
+  }
+  function closePatientModal(){
+    document.getElementById('patient-modal').setAttribute('hidden','');
+    document.body.style.overflow = '';
+    pendingRec = null; pendingKey = null;
+  }
+  function confirmPatient(){
+    if(!pendingRec) return;
+    var rec = pendingRec, key = pendingKey;
+    lookupDecision[key] = 'confirmed';
+    closePatientModal();
+    applyRecord(rec);                  // only now does any PHI reach the form
+    clearFieldError(idInput);
+    lookupNote(null);
+    recompute();
+  }
+  /* Rejecting says "wrong key", not "ignore that record": organization + identifier is unique,
+     so there is no coherent way to keep this identifier and enter a different person. Nothing
+     the user typed is erased — the field is marked and focused so one keystroke fixes it. */
+  function rejectPatient(){
+    if(!pendingKey) return;
+    var key = pendingKey;
+    lookupDecision[key] = 'rejected';
+    closePatientModal();
+    clearAutofill();
+    lookupNote('lookup.unconfirmed', true);
+    setFieldError(idInput, t('err.unconfirmed'));
+    recompute();
+    idInput.focus();
+  }
+  document.getElementById('pm-confirm').addEventListener('click', confirmPatient);
+  document.getElementById('pm-cancel').addEventListener('click', rejectPatient);
+  document.getElementById('pm-x').addEventListener('click', rejectPatient);
+  /* Esc and a click on the backdrop both mean "not this patient" — the safe direction, since
+     it writes nothing */
+  document.getElementById('patient-modal').addEventListener('click', function(e){
+    if(e.target === this) rejectPatient();
+  });
+  idInput.addEventListener('input', function(){
+    /* the key changed, so any error raised for the old one no longer applies */
+    clearFieldError(idInput); recompute(); runLookup();
+  });
   dobInput.addEventListener('input', recompute);
 
   /* ---------- phenotypes: the HPO clinical-signs picker, INLINE (Version B) ----------
@@ -20496,6 +20611,7 @@
   })();
   document.addEventListener('keydown', function(e){
     if(e.key !== 'Escape') return;
+    if(!document.getElementById('patient-modal').hasAttribute('hidden')){ rejectPatient(); return; }
     if(!document.getElementById('hpo-tree-modal').hasAttribute('hidden')){ closeTree(); return; }
     if(!document.getElementById('mondo-modal').hasAttribute('hidden')) closeMondo();
   });
@@ -21010,7 +21126,7 @@
        (a badge on Analysis); category has a default; affected status is inferred. */
     var rows = [
       ['sum-analysis',  state.analysisSet],
-      ['sum-proband',   idInput.value.trim() !== ''],
+      ['sum-proband',   idInput.value.trim() !== '' && !lookupBlocked()],
       ['sum-issuing',   issuingSet],
       ['sum-sex',       !!sexOn],
       ['sum-dob',       dobInput.value.trim() !== '']
