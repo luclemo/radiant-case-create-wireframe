@@ -155,8 +155,9 @@ Family history **left this section on 2026-09-10** — section 5 owns it now.
 
 **5 · Analyse familiale** — under the « Sections facultatives » divider. No opt-in checkbox: a
 standing description carries the ask (« Rapportez des antécédents familiaux et incluez, le cas
-échéant, … »), so the section is always open. Then the member cards, the
-« ＋ Ajouter un membre de la famille » button **below** the list, and the live pedigree.
+échéant, … »), so the section is always open. Then the member cards and the
+« ＋ Ajouter un membre de la famille » button **below** the list. The pedigree is not here —
+it moved to the rail on 2026-09-10.
 
 One card per relative, in two halves. The top line is the family-history record every relative
 gets — Lien de parenté · Sexe · Statut · Préciser (free text) — with the relationship field kept
@@ -169,8 +170,14 @@ becomes a Patient in Radiant.
 
 **Rail** — Analyse (+ germline/somatic badge) · Catégorie · Priorité · ID cas index ·
 Établissement du patient · Sexe · Date de naissance, then « Ajouts facultatifs »: Indication
-principale · Phénotypes · Consanguinité · Ethnicité(s) · Note clinique · Famille, and the
-`x sur 5 champs requis` gate.
+principale · Phénotypes · Consanguinité · Ethnicité(s) · Note clinique · Famille, then the
+**live pedigree** under the Famille row, and the `x sur 5 champs requis` gate.
+
+The shell is **1200 px** wide and the rail **340 px** (both widened on 2026-09-10 to give the
+pedigree somewhere to live). The rail is `position:sticky; top:24px`: with a pedigree drawn it
+can exceed a laptop viewport, so the bottom of it — progress bar and Create — sits below the
+fold until you scroll. That resolves on scroll, since sticky releases once the page runs out of
+room; it is not clipped.
 
 ### Conventions inside the wireframe
 
