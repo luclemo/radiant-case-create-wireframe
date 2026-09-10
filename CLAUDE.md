@@ -195,6 +195,20 @@ room; it is not clipped.
   picks, `opts.search:false` suppresses the filter box, `opts.selected()` re-reads the selection.
 - **Every dropdown is clearable** back to its placeholder through the `↺` row `withClear()`
   prepends whenever a control is `filled`.
+- **A placeholder names the thing it wants** (2026-09-10): « Sélectionner une étude… »,
+  « …un établissement… », « …des ethnicités… », « …un lien de parenté… » rather than a bare
+  « Sélectionner… », each on its own `ph.sel*` key. `ph.select` survives only as the fallback
+  `clearCtrl()` / `renderChips()` / `syncFamilyOrg()` reach for when a control declares none —
+  no control in the form does any more. `localize()` copies a div-select's `data-i18n-ph` into
+  `dataset.ph`, which is what makes clearing one restore *its* placeholder and not the generic
+  one. Free-text placeholders say what to type too: the prescriber field asks « Qui demande
+  cette analyse », and the name fields read « Prénom (facultatif) » / « Nom (facultatif) »
+  rather than a bare « Facultatif » (`ph.optional` and `ph.freetext` were retired).
+- **« Inconnu » is an answer, so the rail inks it** (2026-09-10). A rail value goes dark
+  (`.v.done`) as soon as the user has answered, Unknown included — Consanguinité « Inconnue »
+  and Sexe « Inconnu » read like any other filled value. Only the em-dash placeholder stays
+  muted. Catégorie and Priorité are inked unconditionally by `#sum-cat, #sum-pri`, since they
+  ship with defaults and a muted default made the rail look unanswered.
 - **The indication field is a typeahead, not a select**: an `input[data-sel=condition]` whose
   canonical value stays in `dataset.value` while `.value` shows the translated label — `setSel()`
   and `clearCtrl()` branch on `tagName === 'INPUT'`. Free text is never a value: on blur the label
@@ -248,8 +262,9 @@ room; it is not clipped.
 - **The field once called "issuing site" is « Établissement du patient » / "Patient organization"**
   — it is FHIR's `managingOrganization`, not HL7v2's sending facility. The internal key stays
   `issuing`. **No default value.**
-- **The identifier leads section 2**, labelled « Identifiant (numéro de dossier médical, code de
-  l'étude, …) »; the id-type dropdown (MRN / Other) is gone, proband and family row alike. The
+- **The identifier leads section 2**, labelled simply « Identifiant » since 2026-09-10 — the
+  examples moved into its placeholder, « MRN, code de l'étude, etc… », where they stop competing
+  with the label; the id-type dropdown (MRN / Other) is gone, proband and family row alike. The
   existing-patient lookup therefore keys on **organization + identifier**: it fires whenever that
   pair is complete, whichever half moved last, and re-fires when either changes. Mocked in
   `PATIENT_DB`, one record behind a 700 ms delay — **1234** at Sainte-Justine; anything else

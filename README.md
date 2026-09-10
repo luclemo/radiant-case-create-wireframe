@@ -7,26 +7,41 @@ and set behind the scenes. Case type, for example, is derived from the analysis 
 Open **`case-create-signs-inline.html`** in a real browser (double-click, or `open <file>`). The
 form reacts as you fill it, so a static preview won't work.
 
-`case-create-signs-modal.html` is an abandoned earlier version — ignore it.
+Two other files sit beside it, neither of them the current design:
+
+- `case-create-signs-modal.html` — an abandoned earlier version. Ignore it.
+- `case-create-essai.html` — a trial exploring the same one-family-section idea in a different
+  shape (badge and accent border per member, a composition banner). Kept for comparison; the
+  answer that shipped into the inline version is the per-member checkbox described below.
 
 ## The form
 
 Five sections — **Analyse · Patient (cas index) · Signes cliniques · Autres informations
-cliniques · Famille** — plus a summary rail tracking required fields.
+cliniques · Analyse familiale** — plus a summary rail tracking required fields.
 
 - **Analysis menu** — the real 37-analysis catalog (`analysis_catalog_qlin.csv`), searchable.
   Matches anywhere in the string, since names are prefixed with act numbers.
-- **Patient lookup is identifier-first** — keys on identifier + patient organization. `1234` at
-  Sainte-Justine prefills health number, names, sex, date of birth; anything else reports a new
-  patient. Resolves after a deliberate ~700 ms delay.
-- **Clinical signs** — observed (green ✓, with onset), and not-observed (red ✗) behind an opt-in
-  checkbox.
+- **Patient lookup is identifier-first, and confirmed before anything is written** — it keys on
+  identifier + patient organization. A match opens a dialog showing the record in full (names,
+  sex, date of birth, RAMQ); only « Utiliser ce patient » fills the form, so a mistyped
+  identifier plants nothing in the case. Rejecting means the key is wrong — organization +
+  identifier is unique, so there is deliberately no "use it anyway" — and it blocks Create until
+  the identifier changes. Resolves after a deliberate ~700 ms delay.
+- **Clinical signs** — one checklist row throughout: tick it to pick a phenotype, and a ticked
+  observed row grows an onset menu. Suggestions are a single column cut at 5, « Afficher n de
+  plus » for the rest. Not-observed signs sit behind a button that opens the HPO browser and come
+  back as dismissable badges.
 - **HPO search matches the displayed language only** — "hearing" in French returns nothing, by design.
 - **MONDO browser is a shell** — no hierarchy on disk, so it lists the catalog's conditions flat
   and says so on screen.
 - **Cas prénatal** retitles section 2 « Patient (cas index, mère) », prefills Sexe as Féminin, and
   opens the prenatal block (fetal sex, gestational age, DDM/DPA) at the end of that section. Does
   **not** change priority.
+- **Analyse familiale owns both family roles** — one card per relative records the family history
+  (lien de parenté · sexe · statut · préciser), and ticking « Inclure dans l'analyse génétique »
+  opens the patient-identification fields, because a member in the analysis becomes a Patient in
+  Radiant. The live **pedigree** is drawn in the summary rail, under the Famille row, from every
+  member with a relationship — it is a picture of the family, not of the sequencing batch.
 
 ## Controls (top right)
 
@@ -38,7 +53,9 @@ cliniques · Famille** — plus a summary rail tracking required fields.
 
 - Turn Field codes **off** before showing users.
 - Leave the language on French unless the audience needs English.
-- Have `1234` / Sainte-Justine ready for the lookup — it's the only record in the mock.
+- Have `1234` / Sainte-Justine ready for the lookup — it's the only record in the mock. Show both
+  paths: confirming the patient, and rejecting to see Create block.
+- Add two family members and tick one into the analysis — that draws the pedigree in the rail.
 
 ## Still pending
 
@@ -50,3 +67,6 @@ cliniques · Famille** — plus a summary rail tracking required fields.
 - **Two possible catalog errors** — NPC and NEUTP both read « Neutropénie congénitale »; HLEB and
   HLH both carry act number 55412.
 - **Performing-lab derivation still open (dependency #35)** — depends on unresolved backend questions.
+- **Confirming a candidate patient should probably be audited** — viewing a record is an auditable
+  event in most clinical systems, and the confirm dialog is where that would be logged. Not
+  modelled here; worth deciding before the real lookup is wired.

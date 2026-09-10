@@ -475,7 +475,7 @@
                used to gate it, down in the optional group, was dropped (2026-09-08). -->
           <div class="f" id="study-field" style="margin-top:14px">
             <label><span data-i18n="lbl.study">Research study</span> <span class="key">(project_code)</span><sup class="fn">5</sup></label>
-            <div class="ctrl select" tabindex="0" data-sel="project" data-i18n-ph="ph.select">Select…</div>
+            <div class="ctrl select" tabindex="0" data-sel="project" data-i18n-ph="ph.selProject">Select a study…</div>
           </div>
 
           <!-- Ordering physician and site: they used to sit in a collapsed "Optional details"
@@ -484,11 +484,11 @@
           <div class="grid" style="margin-top:14px">
             <div class="f">
               <label><span data-i18n="lbl.physician">Ordering physician</span> <span class="key">(ordering_physician)</span></label>
-              <input class="ctrl" type="text" data-i18n-ph="ph.freetext" placeholder="Free text">
+              <input class="ctrl" type="text" data-i18n-ph="ph.physician" placeholder="Who is requesting this analysis">
             </div>
             <div class="f">
               <label><span data-i18n="lbl.ordering">Ordering site</span> <span class="key">(ordering_organization_code)</span><sup class="fn">3</sup></label>
-              <div class="ctrl select" tabindex="0" data-sel="ordering" data-i18n-ph="ph.select">Select…</div>
+              <div class="ctrl select" tabindex="0" data-sel="ordering" data-i18n-ph="ph.selOrdering">Select a site…</div>
             </div>
           </div>
 
@@ -504,12 +504,12 @@
                both are set. No default value — asked 2026-09-08. -->
           <div class="grid align-end">
             <div class="f">
-              <label><span data-i18n="lbl.patientId">Identifier (MRN, study code, …)</span> <span class="req">*</span> <span class="key">(submitter_patient_id)</span></label>
-              <input class="ctrl" type="text" data-i18n-ph="ph.idValue" placeholder="Identifier value" data-field="patientid">
+              <label><span data-i18n="lbl.patientId">Identifier</span> <span class="req">*</span> <span class="key">(submitter_patient_id)</span></label>
+              <input class="ctrl" type="text" data-i18n-ph="ph.idValue" placeholder="MRN, Study code, etc…" data-field="patientid">
             </div>
             <div class="f">
               <label><span data-i18n="lbl.issuing">Patient organization</span> <span class="req">*</span> <span class="key">(patient_organization_code)</span><sup class="fn">4</sup></label>
-              <div class="ctrl select" tabindex="0" data-sel="issuing" data-i18n-ph="ph.select">Select…</div>
+              <div class="ctrl select" tabindex="0" data-sel="issuing" data-i18n-ph="ph.selIssuing">Select an organization…</div>
             </div>
             <!-- lookup status spans the whole row rather than sitting inside the identifier cell:
                  the row is bottom-aligned, so a message growing inside one cell would push its
@@ -537,11 +537,11 @@
             <!-- names captured inline with the other demographics, but optional -->
             <div class="f">
               <label><span data-i18n="lbl.firstName">First name</span> <span class="key">(first_name)</span></label>
-              <input class="ctrl" type="text" data-i18n-ph="ph.optional" placeholder="Optional" data-field="firstname">
+              <input class="ctrl" type="text" data-i18n-ph="ph.firstName" placeholder="First name (optional)" data-field="firstname">
             </div>
             <div class="f">
               <label><span data-i18n="lbl.lastName">Last name</span> <span class="key">(last_name)</span></label>
-              <input class="ctrl" type="text" data-i18n-ph="ph.optional" placeholder="Optional" data-field="lastname">
+              <input class="ctrl" type="text" data-i18n-ph="ph.lastName" placeholder="Last name (optional)" data-field="lastname">
             </div>
           </div>
 
@@ -631,7 +631,7 @@
         <div class="body">
           <div class="grid">
               <div class="f"><label><span data-i18n="lbl.consang">Consanguinity</span> <span class="key">(obs: consanguinity)</span></label><div class="seg" data-seg="consang"><span data-val="Yes" data-i18n="yn.Yes">Yes</span><span data-val="No" data-i18n="yn.No">No</span><span data-val="Unknown" data-i18n="yn.Unknown">Unknown</span></div></div>
-              <div class="f"><label><span data-i18n="lbl.ancestry">Ethnicities</span> <span class="key">(ethnicity_codes)</span></label><div class="ctrl select" tabindex="0" data-sel="ancestry" data-i18n-ph="ph.select">Select…</div></div>
+              <div class="f"><label><span data-i18n="lbl.ancestry">Ethnicities</span> <span class="key">(ethnicity_codes)</span></label><div class="ctrl select" tabindex="0" data-sel="ancestry" data-i18n-ph="ph.selAncestry">Select ethnicities…</div></div>
               <!-- the standardized indication sits directly above the free-text note: one is the
                    coded answer, the other the prose around it (moved here 2026-09-08) -->
             <div class="f full"><label><span data-i18n="lbl.condition">Primary indication (MONDO)</span> <span class="key">(primary_condition_value)</span></label>
@@ -19650,7 +19650,7 @@
       'lbl.lmpDate':'Date (LMP)', 'lbl.eddDate':'Date (EDD)',
       'rail.priority':'Priority',
       'lbl.ordering':'Ordering site', 'lbl.physician':'Ordering physician', 'lbl.study':'Research study (consent obtained)',
-      'lbl.issuing':'Patient organization', 'lbl.patientId':'Identifier (MRN, study code, …)', 'lbl.healthNo':'Health number',
+      'lbl.issuing':'Patient organization', 'lbl.patientId':'Identifier', 'lbl.healthNo':'Health number',
       'lbl.firstName':'First name', 'lbl.lastName':'Last name', 'lbl.sex':'Sex', 'lbl.dob':'Date of birth',
       'lbl.condition':'Primary indication (MONDO)', 'lbl.life':'Life status',
       'lbl.phenotypes':'Phenotypes',
@@ -19679,9 +19679,14 @@
       'lbl.inclSeq':'Include in the genetic analysis',
       'lbl.relation':'Relationship', 'lbl.relative':'Family member', 'lbl.affected':'Affected status',
       'lbl.fhSpecify':'Specify', 'ph.specify':'Free text',
-      'ph.select':'Select…', 'ph.analysis':'Select an analysis…', 'ph.idValue':'Identifier value',
-      'ph.jhn':'RAMQ (QC) or regional JHN', 'ph.optional':'Optional', 'ph.dob':'YYYY-MM-DD',
-      'ph.freetext':'Free text', 'ph.condition':'Search an indication (name or MONDO:…)',
+      'ph.select':'Select…', 'ph.analysis':'Select an analysis…',
+      'ph.selProject':'Select a study…', 'ph.selOrdering':'Select a site…',
+      'ph.selIssuing':'Select an organization…', 'ph.selAncestry':'Select ethnicities…',
+      'ph.selRelation':'Select a relationship…',
+      'ph.idValue':'MRN, Study code, etc…', 'ph.physician':'Who is requesting this analysis',
+      'ph.firstName':'First name (optional)', 'ph.lastName':'Last name (optional)',
+      'ph.jhn':'RAMQ (QC) or regional JHN', 'ph.dob':'YYYY-MM-DD',
+      'ph.condition':'Search an indication (name or MONDO:…)',
       'lookup.searching':'Looking for an existing patient…',
       'lookup.none':'No patient with this identifier here — new patient.',
       'lookup.unconfirmed':'Existing patient not confirmed — check the identifier or the organization.',
@@ -19742,7 +19747,7 @@
       'lbl.lmpDate':'Date (DDM)', 'lbl.eddDate':'Date (DPA)',
       'rail.priority':'Priorité',
       'lbl.ordering':'Établissement prescripteur', 'lbl.physician':'Médecin prescripteur', 'lbl.study':'Étude de recherche (consentement obtenu)',
-      'lbl.issuing':'Établissement du patient', 'lbl.patientId':'Identifiant (MRN, code de l’étude, …)', 'lbl.healthNo':'RAMQ',
+      'lbl.issuing':'Établissement du patient', 'lbl.patientId':'Identifiant', 'lbl.healthNo':'RAMQ',
       'lbl.firstName':'Prénom', 'lbl.lastName':'Nom', 'lbl.sex':'Sexe', 'lbl.dob':'Date de naissance',
       'lbl.condition':'Indication principale (MONDO)', 'lbl.life':'Statut vital',
       'lbl.phenotypes':'Phénotypes',
@@ -19771,9 +19776,14 @@
       'lbl.inclSeq':'Inclure dans l’analyse génétique',
       'lbl.relation':'Lien de parenté', 'lbl.relative':'Membre de la famille', 'lbl.affected':'Statut',
       'lbl.fhSpecify':'Préciser', 'ph.specify':'Texte libre',
-      'ph.select':'Sélectionner…', 'ph.analysis':'Sélectionner une analyse…', 'ph.idValue':'Valeur de l’identifiant',
-      'ph.jhn':'RAMQ (QC) ou NAM régional', 'ph.optional':'Facultatif', 'ph.dob':'AAAA-MM-JJ',
-      'ph.freetext':'Texte libre', 'ph.condition':'Rechercher une indication (nom ou MONDO:…)',
+      'ph.select':'Sélectionner…', 'ph.analysis':'Sélectionner une analyse…',
+      'ph.selProject':'Sélectionner une étude…', 'ph.selOrdering':'Sélectionner un établissement…',
+      'ph.selIssuing':'Sélectionner un établissement…', 'ph.selAncestry':'Sélectionner des ethnicités…',
+      'ph.selRelation':'Sélectionner un lien de parenté…',
+      'ph.idValue':'MRN, code de l’étude, etc…', 'ph.physician':'Qui demande cette analyse',
+      'ph.firstName':'Prénom (facultatif)', 'ph.lastName':'Nom (facultatif)',
+      'ph.jhn':'RAMQ (QC) ou NAM régional', 'ph.dob':'AAAA-MM-JJ',
+      'ph.condition':'Rechercher une indication (nom ou MONDO:…)',
       'lookup.searching':'Recherche d’un patient existant…',
       'lookup.none':'Aucun patient avec cet identifiant ici — nouveau patient.',
       'lookup.unconfirmed':'Patient existant non confirmé — vérifiez l’identifiant ou l’établissement.',
@@ -20860,7 +20870,7 @@
          free text gets the width left over (2026-09-10) */
       '<div class="famtop">' +
         '<div class="f"><label><span data-i18n="lbl.relation">Relationship</span> <span class="req">*</span> <span class="key">(relation_to_proband_code)</span></label>' +
-          '<div class="ctrl select" tabindex="0" data-fam="relation" data-i18n-ph="ph.select">Select…</div></div>' +
+          '<div class="ctrl select" tabindex="0" data-fam="relation" data-i18n-ph="ph.selRelation">Select a relationship…</div></div>' +
         '<div class="f"><label><span data-i18n="lbl.sex">Sex</span> <span class="req">*</span> <span class="key">(sex_code)</span></label>' +
           '<div class="seg" data-fam-seg="sex"><span data-val="M" data-i18n-title="sex.M">M</span><span data-val="F" data-i18n-title="sex.F">F</span><span data-val="U" data-i18n="abbr.sexU" data-i18n-title="sex.U">U</span></div></div>' +
         '<div class="f"><label><span data-i18n="lbl.affected">Affected status</span> <span class="req">*</span> <span class="key">(affected_status_code)</span></label>' +
@@ -20873,18 +20883,18 @@
         '<label class="check" data-fam-seq><span class="box"></span><span data-i18n="lbl.inclSeq">Include in the genetic analysis</span></label>' +
       '</div>' +
       '<div class="famseq" hidden><div class="grid align-end">' +
-        '<div class="f"><label><span data-i18n="lbl.patientId">Identifier (MRN, study code, …)</span> <span class="req">*</span> <span class="key">(submitter_patient_id)</span></label>' +
-          '<input class="ctrl" type="text" data-i18n-ph="ph.idValue" placeholder="Identifier value" data-fam-seq-id></div>' +
+        '<div class="f"><label><span data-i18n="lbl.patientId">Identifier</span> <span class="req">*</span> <span class="key">(submitter_patient_id)</span></label>' +
+          '<input class="ctrl" type="text" data-i18n-ph="ph.idValue" placeholder="MRN, Study code, etc…" data-fam-seq-id></div>' +
         '<div class="f"><label><span data-i18n="lbl.issuing">Patient organization</span> <span class="req">*</span> <span class="key">(patient_organization_code)</span><sup class="fn">8</sup></label>' +
-          '<div class="ctrl select" tabindex="0" data-fam-seq-org data-i18n-ph="ph.select">Select…</div></div>' +
+          '<div class="ctrl select" tabindex="0" data-fam-seq-org data-i18n-ph="ph.selIssuing">Select an organization…</div></div>' +
         '<div class="f"><label><span data-i18n="lbl.healthNo">Health number</span> <span class="key">(jhn)</span><sup class="fn">6</sup></label>' +
           '<input class="ctrl" type="text" data-i18n-ph="ph.jhn" placeholder="RAMQ (QC) or regional JHN" data-fam-seq-jhn></div>' +
         '<div class="f"><label><span data-i18n="lbl.dob">Date of birth</span> <span class="req">*</span> <span class="key">(date_of_birth)</span></label>' +
           '<input class="ctrl" type="date" data-i18n-ph="ph.dob" placeholder="YYYY-MM-DD" data-fam-seq-dob></div>' +
         '<div class="f"><label><span data-i18n="lbl.firstName">First name</span> <span class="key">(first_name)</span></label>' +
-          '<input class="ctrl" type="text" data-i18n-ph="ph.optional" placeholder="Optional" data-fam-seq-first></div>' +
+          '<input class="ctrl" type="text" data-i18n-ph="ph.firstName" placeholder="First name (optional)" data-fam-seq-first></div>' +
         '<div class="f"><label><span data-i18n="lbl.lastName">Last name</span> <span class="key">(last_name)</span></label>' +
-          '<input class="ctrl" type="text" data-i18n-ph="ph.optional" placeholder="Optional" data-fam-seq-last></div>' +
+          '<input class="ctrl" type="text" data-i18n-ph="ph.lastName" placeholder="Last name (optional)" data-fam-seq-last></div>' +
       '</div></div>';
     var rel = row.querySelector('[data-fam="relation"]');
     rel.addEventListener('click', function(){
@@ -20916,7 +20926,7 @@
     /* issuing site defaults to the proband's org (via syncFamilyOrg) but is editable;
        a manual pick sets 'overridden' so it no longer follows the proband */
     var famOrg = row.querySelector('[data-fam-seq-org]');
-    famOrg.dataset.ph = t('ph.select');
+    famOrg.dataset.ph = t('ph.selIssuing');
     famOrg.addEventListener('click', function(){
       openMenu(famOrg, menuItems('issuing'), famOrg.classList.contains('filled') ? famOrg.dataset.value : null, function(v){
         famOrg.dataset.overridden = '1';   // a manual pick also counts as an override
@@ -21081,11 +21091,13 @@
      no longer inherited from the ordering site. Phenotypes & family are optional. */
   /* Clinical context is split across three rail rows, each on its own line. */
   function syncClinicalRows(){
-    /* consanguinity — no default now; « — » until a value is picked, inked once it is Yes/No */
+    /* consanguinity — no default; « — » until a value is picked, then inked. « Inconnue » is
+       one of those values: the user answered, so it reads like any other answer, not like a
+       gap. Only the em-dash stays muted. */
     var cons = document.querySelector('[data-seg="consang"] .on');
     var cEl = document.getElementById('sum-consang');
     cEl.textContent = cons ? t('yn.'+cons.dataset.val) : '—';
-    cEl.classList.toggle('done', !!cons && cons.dataset.val !== 'Unknown');
+    cEl.classList.toggle('done', !!cons);
     /* ethnicity — several values, listed in the order they were picked */
     var anc = document.querySelector('[data-sel="ancestry"]');
     var aVals = anc ? multiValues(anc) : [];
