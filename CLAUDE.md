@@ -131,8 +131,9 @@ Five sections, French by default.
 
 **1 · Analyse** — Analyse\* (searchable menu over the 37 catalog entries) | Priorité (Routine);
 under them the ☐ **Cas prénatal** checkbox (it carries the `category_code` annotation and
-footnote 2, the "Catégorie" label having been dropped); Étude de recherche (Pragmatic ·
-Care4Rare · RQDM), full width; Médecin prescripteur | Établissement prescripteur.
+footnote 2, the "Catégorie" label having been dropped); « Étude de recherche (consentement
+obtenu) » (Pragmatic · Care4Rare · RQDM), full width — picking a study *is* the consent, so there
+is no separate checkbox; Médecin prescripteur | Établissement prescripteur.
 
 **2 · Patient (cas index)** — title becomes « Patient (cas index, mère) » in prenatal mode, where
 Sexe is also prefilled Féminin. Identifiant\* | Établissement du patient\*, then the lookup status
