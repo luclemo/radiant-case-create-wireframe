@@ -61,6 +61,7 @@
   .sec.collapsed{border-style:dashed}
   .chev{color:var(--faint);font-size:12px}
   .optlabel{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+  #rail-fetal[hidden]{display:none}
 
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
   .grid.three{grid-template-columns:1fr 1fr 1fr}
@@ -290,6 +291,13 @@
   /* revealed only when a family member will be sequenced: identity fields it then needs */
   .famseq{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line-soft)}
   .famseq[hidden]{display:none}
+  /* derive-and-hide: in a prenatal case the mother's identification is already in section 2,
+     so the card states which record is going in rather than asking for it again — one line
+     instead of six read-only fields */
+  .famseq.mirrored > .grid{display:none}
+  .probandref{margin:0;font-size:12px;line-height:1.5;color:var(--mut)}
+  .probandref[hidden]{display:none}
+  .probandref b{font-weight:600;color:var(--ink)}
 
   /* right-rail footnote legend — deliberately NOT a card; it's a reviewer annotation, not UI */
   .notes-legend{margin-top:22px;padding-top:14px;border-top:1px dashed var(--line)}
@@ -687,6 +695,17 @@
         <div class="sumrow"><span class="k" data-i18n="rail.issuing">Patient organization</span><span class="v" id="sum-issuing">—</span></div>
         <div class="sumrow"><span class="k" data-i18n="rail.sex">Sex</span><span class="v" id="sum-sex">—</span></div>
         <div class="sumrow"><span class="k" data-i18n="rail.dob">Date of birth</span><span class="v" id="sum-dob">—</span></div>
+
+        <!-- prenatal only. Everything above this describes the MOTHER — she is the patient of
+             record, which is why the identifier row renames itself — so the fetus's own facts
+             get their own block rather than sitting in among hers. Both rows are required in a
+             prenatal case (the gate goes 5 -> 7), so the block sits ABOVE « Optional additions »,
+             and disappears entirely in a postnatal case. -->
+        <div id="rail-fetal" hidden>
+          <div class="optlabel" style="margin:16px 0 2px" data-i18n="rail.fetal">Fetal information</div>
+          <div class="sumrow"><span class="k" data-i18n="rail.fetalSex">Fetal sex</span><span class="v" id="sum-fetalsex">—</span></div>
+          <div class="sumrow"><span class="k" data-i18n="rail.gestAge">Gestational age</span><span class="v" id="sum-gestage">—</span></div>
+        </div>
 
         <div class="optlabel" style="margin:16px 0 2px" data-i18n="rail.optAdditions">Optional additions</div>
         <div class="sumrow"><span class="k" data-i18n="rail.condition">Primary indication</span><span class="v" id="sum-condition">—</span></div>
@@ -19674,6 +19693,8 @@
       'dlg.cancel':'Cancel', 'dlg.add':'Add selection',
       'sum.observed':'Observed', 'sum.notObserved':'Not observed',
       'lbl.consang':'Consanguinity', 'lbl.ancestry':'Ethnicities', 'lbl.note':'Clinical note',
+      'fam.probandRef':'Patient record:',
+      'fam.probandRefEmpty':'Patient record: taken from section 2, once the identifier and patient organization are filled in there.',
       'lbl.onset':'Onset', 'lbl.addFamily':'＋ Add family member',
       'fam.instruction':'Report family history and, where applicable, include members in the proband’s genetic analysis (duo, trio, etc.). A member included in the analysis requires a patient record (identifier).',
       'lbl.inclSeq':'Include in the genetic analysis',
@@ -19704,6 +19725,8 @@
       'type.Germline':'Germline', 'type.Somatic':'Somatic',
       'rail.summary':'Case summary', 'rail.analysis':'Analysis', 'rail.category':'Category', 'rail.probandId':'Proband ID',
       'rail.issuing':'Patient organization', 'rail.sex':'Sex', 'rail.dob':'Date of birth', 'rail.optAdditions':'Optional additions',
+      'rail.motherId':'Mother ID', 'rail.fetal':'Fetal information', 'rail.fetalSex':'Fetal sex', 'rail.gestAge':'Gestational age',
+      'gestAbbr.LMP':'LMP', 'gestAbbr.EDD':'EDD',
       'rail.condition':'Primary indication', 'rail.pheno':'Phenotypes', 'rail.consang':'Consanguinity', 'rail.ancestry':'Ethnicities',
       'rail.note':'Clinical note', 'rail.family':'Family', 'rail.create':'Create case', 'rail.draft':'Save draft',
       'rail.note.hint':'Save draft anytime — a partial requisition can be captured now and finished later. Required fields are only enforced at Create.',
@@ -19771,6 +19794,8 @@
       'dlg.cancel':'Annuler', 'dlg.add':'Ajouter la sélection',
       'sum.observed':'Observés', 'sum.notObserved':'Non observés',
       'lbl.consang':'Consanguinité', 'lbl.ancestry':'Ethnicité(s)', 'lbl.note':'Note clinique',
+      'fam.probandRef':'Dossier patient :',
+      'fam.probandRefEmpty':'Dossier patient : repris de la section 2, dès que l’identifiant et l’établissement du patient y seront renseignés.',
       'lbl.onset':'Âge d’apparition', 'lbl.addFamily':'＋ Ajouter un membre de la famille',
       'fam.instruction':'Rapportez des antécédents familiaux et incluez, le cas échéant, des membres dans l’analyse génétique du cas index (duo, trio, etc.). Un membre inclus dans l’analyse requiert un dossier patient (identifiant).',
       'lbl.inclSeq':'Inclure dans l’analyse génétique',
@@ -19801,6 +19826,8 @@
       'type.Germline':'Germinal', 'type.Somatic':'Somatique',
       'rail.summary':'Résumé du cas', 'rail.analysis':'Analyse', 'rail.category':'Catégorie', 'rail.probandId':'ID cas index',
       'rail.issuing':'Établissement du patient', 'rail.sex':'Sexe', 'rail.dob':'Date de naissance', 'rail.optAdditions':'Ajouts facultatifs',
+      'rail.motherId':'ID mère', 'rail.fetal':'Informations fœtales', 'rail.fetalSex':'Sexe fœtal', 'rail.gestAge':'Âge gestationnel',
+      'gestAbbr.LMP':'DDM', 'gestAbbr.EDD':'DPA',
       'rail.condition':'Indication principale', 'rail.pheno':'Phénotypes', 'rail.consang':'Consanguinité', 'rail.ancestry':'Ethnicité(s)',
       'rail.note':'Note clinique', 'rail.family':'Famille', 'rail.create':'Créer le cas', 'rail.draft':'Enregistrer le brouillon',
       'rail.note.hint':'Enregistrez un brouillon à tout moment — une requête partielle peut être saisie maintenant et complétée plus tard. Les champs requis ne sont exigés qu’à la création.',
@@ -20264,6 +20291,41 @@
     document.getElementById('sum-pri').textContent = optLabel('priority', val);
     document.getElementById('sum-pri').classList.toggle('done', val !== 'Routine');
   }
+  /* ---------- the rail in a prenatal case ----------
+     Section 2 describes the mother, so « ID cas index » is a lie there — the identifier is hers.
+     The label swaps between two i18n keys the way section 2's own title does, so a language
+     switch repaints it by itself. The fetus's two required facts then get their own block. */
+  function syncProbandIdLabel(on){
+    var k = document.querySelector('[data-i18n="rail.probandId"], [data-i18n="rail.motherId"]');
+    if(!k) return;
+    k.setAttribute('data-i18n', on ? 'rail.motherId' : 'rail.probandId');
+    k.textContent = t(k.getAttribute('data-i18n'));
+  }
+  /* the gestational-age row mirrors the field as entered — the basis and its date, or the
+     demise — rather than deriving a number of weeks, which is nowhere else in this form. */
+  function syncFetalRows(){
+    var on = document.querySelector('[data-check="prenatal"]').classList.contains('on');
+    document.getElementById('rail-fetal').toggleAttribute('hidden', !on);
+    syncProbandIdLabel(on);
+    if(!on) return;
+    var fs = document.querySelector('[data-seg="fetalsex"] .on');
+    var fsEl = document.getElementById('sum-fetalsex');
+    fsEl.textContent = fs ? t('fsex.' + fs.dataset.val) : '—';   // « Indéterminé » is an answer, so it inks
+    fsEl.classList.toggle('done', !!fs);
+    var g = document.querySelector('[data-radio="gestage"] .radio.on');
+    var gv = g ? g.dataset.val : null, out = '—', set = false;
+    if(gv === 'demise'){ out = t('gest.demise'); set = true; }
+    else if(gv === 'LMP' || gv === 'EDD'){
+      var d = document.querySelector('[data-field="' + (gv === 'LMP' ? 'lmpdate' : 'edddate') + '"]');
+      var dv = d && d.value.trim();
+      out = t('gestAbbr.' + gv) + (dv ? ' ' + dv : '');
+      set = !!dv;                                  // a basis with no date yet is not an answer
+    }
+    var gEl = document.getElementById('sum-gestage');
+    gEl.textContent = out;
+    gEl.classList.toggle('done', set);
+  }
+
   /* prenatal adds two required fields to the gate; returns null when prenatal is off */
   function prenatalReqs(){
     if(!document.querySelector('[data-check="prenatal"]').classList.contains('on')) return null;
@@ -20449,6 +20511,12 @@
     clearFieldError(idInput); recompute(); runLookup();
   });
   dobInput.addEventListener('input', recompute);
+  /* the names gate nothing, so they never needed a listener — but the mother's « Dossier
+     patient » line in section 5 names her, and has to follow what is typed here */
+  ['firstname','lastname'].forEach(function(f){
+    var el = document.querySelector('[data-field="'+f+'"]');
+    if(el) el.addEventListener('input', syncProbandLink);
+  });
 
   /* ---------- phenotypes: the HPO clinical-signs picker, INLINE (Version B) ----------
      `pheno` is the single source of truth, edited live by the inline checklists AND by the tree
@@ -20840,6 +20908,11 @@
     });
   }
   function famApplyRelation(row, v){
+    /* a mirrored card holds the MOTHER's identification, copied from section 2 — the user never
+       typed it here. Pointing the card at another relative would hand her identifiers to that
+       person, so the block empties on the way out. Only the mirrored copy is dropped: details
+       the user typed for a card themselves are theirs, and survive a relationship correction. */
+    var wasMirrored = !!row.querySelector('.famseq.mirrored');
     setSel(row.querySelector('[data-fam="relation"]'), 'relation', v);
     /* infer sex from relationship (the unambiguous ones only) — editable after. The sex
        control uses short M|F|U codes in data-val, so map the inferred value onto those. */
@@ -20849,6 +20922,8 @@
       Array.prototype.forEach.call(seg.children, function(sp){ sp.classList.toggle('on', sp.dataset.val === sex); });
       seg.classList.remove('flash'); void seg.offsetWidth; seg.classList.add('flash');
     }
+    if(wasMirrored && v !== 'Mother') emptyFamSeq(row);
+    syncProbandLink();   // the row may have just become (or stopped being) the mother
     renderPedigree();
   }
   document.getElementById('add-family').addEventListener('click', function(){
@@ -20882,7 +20957,9 @@
       '<div class="famfoot">' +
         '<label class="check" data-fam-seq><span class="box"></span><span data-i18n="lbl.inclSeq">Include in the genetic analysis</span></label>' +
       '</div>' +
-      '<div class="famseq" hidden><div class="grid align-end">' +
+      '<div class="famseq" hidden>' +
+        '<p class="probandref" hidden></p>' +
+        '<div class="grid align-end">' +
         '<div class="f"><label><span data-i18n="lbl.patientId">Identifier</span> <span class="req">*</span> <span class="key">(submitter_patient_id)</span></label>' +
           '<input class="ctrl" type="text" data-i18n-ph="ph.idValue" placeholder="MRN, Study code, etc…" data-fam-seq-id></div>' +
         '<div class="f"><label><span data-i18n="lbl.issuing">Patient organization</span> <span class="req">*</span> <span class="key">(patient_organization_code)</span><sup class="fn">8</sup></label>' +
@@ -20922,12 +20999,14 @@
         box.setAttribute('hidden','');
         emptyFamSeq(row);
       }
+      syncProbandLink();
     });
     /* issuing site defaults to the proband's org (via syncFamilyOrg) but is editable;
        a manual pick sets 'overridden' so it no longer follows the proband */
     var famOrg = row.querySelector('[data-fam-seq-org]');
     famOrg.dataset.ph = t('ph.selIssuing');
     famOrg.addEventListener('click', function(){
+      if(famOrg.classList.contains('locked')) return;   // section 2 owns this row's organization
       openMenu(famOrg, menuItems('issuing'), famOrg.classList.contains('filled') ? famOrg.dataset.value : null, function(v){
         famOrg.dataset.overridden = '1';   // a manual pick also counts as an override
         setSel(famOrg,'issuing',v); clearFieldError(famOrg);
@@ -20946,9 +21025,70 @@
     var preset = FAM_PRESET.filter(function(r){ return famUsed.indexOf(r) === -1; })[0];
     if(preset) famApplyRelation(row, preset);
     syncFamilyOrg();   // a relative inherits the proband's patient organization (editable after)
+    syncProbandLink();
     sumFamily();
     renderPedigree();
   });
+  /* ---------- prenatal: the mother's card reuses section 2's identification ----------
+     In a prenatal case the proband is the FETUS; section 2 carries the mother's identity only
+     because a fetus has no Patient record of its own. Such a case is solo by default, so
+     nothing happens here until the user adds someone. But the mother is an ordinary relative
+     of the fetus, and once she is ticked into the analysis her identifying details are already
+     known — so the card names the record instead of asking for it again. It does NOT re-display
+     the six fields: that is the derive-and-hide rule this whole form is built on, and a
+     read-only copy of section 2 cost 240 px (40% of section 5) to say nothing new. One line
+     names the record going in — organization + identifier is the unique key — and the fields
+     stay empty and hidden underneath, so nothing stale can reach the case. Any other relation,
+     or a non-prenatal case, gets the ordinary editable block. */
+  /* the one row section 2 stands in for: prenatal, relation Mother, in the analysis. Mother is
+     in FAM_UNIQUE, so at most one row can ever match. */
+  function mirroredFamRow(){
+    if(!document.querySelector('[data-check="prenatal"]').classList.contains('on')) return null;
+    var hit = null;
+    famList.querySelectorAll('.frow').forEach(function(row){
+      var rel = row.querySelector('[data-fam="relation"]');
+      var seq = row.querySelector('[data-fam-seq]');
+      if(rel && rel.classList.contains('filled') && rel.dataset.value === 'Mother' &&
+         seq && seq.classList.contains('on')) hit = row;
+    });
+    return hit;
+  }
+  /* « Dossier patient : A-77 · CHU Sainte-Justine · Marie-Claude Gagnon » — the identifier is
+     emphasised because it is what the user scans for, and organization + identifier is the
+     unique key the lookup itself runs on. The name is appended only when section 2 holds one:
+     both name fields are still optional there, so the line has to read without them. Built from
+     text nodes, never innerHTML — the identifier is free text and this file has no escaper. */
+  function paintProbandRef(el){
+    var idv = (idInput.value || '').trim();
+    var orgEl = document.querySelector('[data-sel="issuing"]');
+    var orgv = (orgEl && orgEl.dataset.value) ? optLabel('issuing', orgEl.dataset.value) : '';
+    el.textContent = '';
+    if(!idv || !orgv){ el.textContent = t('fam.probandRefEmpty'); return; }
+    var name = ['firstname','lastname'].map(function(f){
+      var e = fld(f); return e ? e.value.trim() : '';
+    }).filter(Boolean).join(' ');
+    el.appendChild(document.createTextNode(t('fam.probandRef') + ' '));
+    var b = document.createElement('b'); b.textContent = idv; el.appendChild(b);
+    el.appendChild(document.createTextNode(' · ' + orgv + (name ? ' · ' + name : '')));
+  }
+  function syncProbandLink(){
+    var mirror = mirroredFamRow();
+    famList.querySelectorAll('.frow').forEach(function(row){
+      var box = row.querySelector('.famseq'); if(!box) return;
+      var on = (row === mirror);
+      box.classList.toggle('mirrored', on);
+      var ref = box.querySelector('.probandref');
+      if(ref) ref.toggleAttribute('hidden', !on);
+      if(!on) return;
+      /* the hidden fields are emptied, not filled: the case takes the mother's identity from
+         section 2, and a stale value sitting behind a hidden block is what this rule exists
+         to prevent. Emptying also means a switch to another relation starts clean. */
+      emptyFamSeq(row);
+      if(ref) paintProbandRef(ref);
+    });
+    syncFamilyOrg();
+  }
+
   /* a member taken out of the analysis leaves nothing behind: the block is cleared, not just
      hidden, so an identifier typed and then untickd can never reach the case */
   function emptyFamSeq(row){
@@ -20998,7 +21138,11 @@
     if(parents.length + sibs.length + kids.length === 0){ host.setAttribute('hidden',''); host.innerHTML=''; return; }
     host.removeAttribute('hidden');
 
-    var pSexOn = document.querySelector('[data-seg="sex"] .on');
+    /* the proband is the FETUS in a prenatal case, so its symbol takes the fetal sex: section
+       2's Sexe is the mother's there (prenatal prefills it Féminin), and reading it drew the
+       mother twice — once as « Cas index », once as « Mère ». Both segments use M|F|U. */
+    var prenatalOn = document.querySelector('[data-check="prenatal"]').classList.contains('on');
+    var pSexOn = document.querySelector(prenatalOn ? '[data-seg="fetalsex"] .on' : '[data-seg="sex"] .on');
     var pSex = pSexOn ? pSexOn.dataset.val : 'U';
     var pLifeOn = document.querySelector('[data-seg="life"] .on');
     var proband = { relation:'Proband', sex:pSex, aff:'Affected', proband:true,
@@ -21153,6 +21297,8 @@
     document.getElementById('btn-create').classList.toggle('ready', done === total);
     syncConditionRow();
     syncClinicalRows();
+    syncFetalRows();
+    syncProbandLink();   // section 2 moved, so a mirrored mother's card follows it
     renderPedigree();
   }
 
@@ -21200,6 +21346,9 @@
     famList.querySelectorAll('.frow').forEach(function(row){
       var seq = row.querySelector('[data-fam-seq]');
       if(!seq || !seq.classList.contains('on')) return;   // reported only — nothing to validate
+      /* the mother's identification IS section 2's, and the core gate already requires it
+         there — the card asks for nothing, so there is nothing here to validate */
+      if(row.querySelector('.famseq.mirrored')) return;
       var idc = row.querySelector('[data-fam-seq-id]');
       var org = row.querySelector('[data-fam-seq-org]');
       var dob = row.querySelector('[data-fam-seq-dob]');
