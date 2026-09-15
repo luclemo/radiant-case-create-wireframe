@@ -138,6 +138,13 @@
   .radio.on .dot{border-color:var(--accent)}
   .radio.on .dot::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
   .radio:hover .dot{border-color:var(--accent)}
+  /* the date sits under its own option and takes the option as its label, so it is indented to
+     the option's text (16px dot + 9px gap) and kept as narrow as a date needs to be */
+  .gestdate{display:flex;align-items:center;gap:10px;margin:-2px 0 2px 25px}
+  .gestdate[hidden]{display:none}
+  .gestdate input[type=date]{width:150px;flex:0 0 auto}
+  .gestcalc{font-size:12px;color:var(--mut);white-space:nowrap}
+  .gestcalc:empty{display:none}
   /* native date picker adopts the control's typography */
   input[type="date"].ctrl{font:inherit}
 
@@ -558,7 +565,7 @@
                next to the checkbox (moved 2026-09-08). The prenatal handler toggles [hidden] and
                clears them when it's switched off, so nothing hidden submits. -->
           <div id="prenatal-fields" hidden style="margin-top:16px;border-top:1px solid var(--line-soft);padding-top:16px">
-            <p class="subhead" data-i18n="lbl.prenatalInfo">Additional information</p>
+            <p class="subhead" data-i18n="lbl.prenatalInfo">Fetal information</p>
             <div class="grid">
               <div class="f">
                 <label><span data-i18n="lbl.fetalSex">Fetal sex</span> <span class="req">*</span> <span class="key">(fetal_sex_code)</span></label>
@@ -566,18 +573,22 @@
               </div>
               <div class="f">
                 <label><span data-i18n="lbl.gestAge">Gestational age</span> <span class="req">*</span> <span class="key">(gestational_age)</span></label>
+                <!-- each date sits directly under the option that asks for it and carries no
+                     label of its own — the option is the label. The field_code annotation moves
+                     onto that option rather than disappearing with the label it replaced. The
+                     calculated age shows to the right once a date is entered. -->
                 <div class="radiogroup" data-radio="gestage">
-                  <label class="radio" data-val="LMP"><span class="dot"></span><span data-i18n="gest.LMP">LMP — last menstrual period</span></label>
-                  <label class="radio" data-val="EDD"><span class="dot"></span><span data-i18n="gest.EDD">EDD — estimated due date</span></label>
+                  <label class="radio" data-val="LMP"><span class="dot"></span><span data-i18n="gest.LMP">LMP — last menstrual period</span> <span class="key">(lmp_date)</span></label>
+                  <div class="gestdate" id="gest-lmp-field" hidden>
+                    <input class="ctrl" type="date" data-field="lmpdate" data-i18n-title="lbl.lmpDate" title="Date (LMP)">
+                    <span class="gestcalc" id="gest-lmp-calc"></span>
+                  </div>
+                  <label class="radio" data-val="EDD"><span class="dot"></span><span data-i18n="gest.EDD">EDD — estimated due date</span> <span class="key">(edd_date)</span></label>
+                  <div class="gestdate" id="gest-edd-field" hidden>
+                    <input class="ctrl" type="date" data-field="edddate" data-i18n-title="lbl.eddDate" title="Date (EDD)">
+                    <span class="gestcalc" id="gest-edd-calc"></span>
+                  </div>
                   <label class="radio" data-val="demise"><span class="dot"></span><span data-i18n="gest.demise">Fetal demise</span></label>
-                </div>
-                <div class="f" id="gest-lmp-field" hidden style="margin-top:8px">
-                  <label><span data-i18n="lbl.lmpDate">Date (LMP)</span> <span class="key">(lmp_date)</span></label>
-                  <input class="ctrl" type="date" data-field="lmpdate">
-                </div>
-                <div class="f" id="gest-edd-field" hidden style="margin-top:8px">
-                  <label><span data-i18n="lbl.eddDate">Date (EDD)</span> <span class="key">(edd_date)</span></label>
-                  <input class="ctrl" type="date" data-field="edddate">
                 </div>
               </div>
             </div>
@@ -19662,10 +19673,11 @@
       'ui.removeSign':'Remove', 'ui.clearSearch':'Clear the search', 'ui.removeRow':'Remove this row',
       'sec.analysis':'Analysis', 'sec.proband':'Patient (proband)', 'sec.probandPrenatal':'Patient (proband, mother)', 'sec.clinical':'Clinical signs', 'sec.otherClinical':'Other clinical information (optional)', 'sec.family':'Family analysis',
       'lbl.analysis':'Analysis', 'lbl.prenatal':'Prenatal case', 'lbl.priority':'Priority',
-      'lbl.prenatalInfo':'Additional information',
+      'lbl.prenatalInfo':'Fetal information',
       'lbl.fetalSex':'Fetal sex', 'fsex.F':'Female', 'fsex.M':'Male', 'fsex.U':'Undetermined',
       'lbl.gestAge':'Gestational age',
       'gest.LMP':'LMP — last menstrual period', 'gest.EDD':'EDD — estimated due date', 'gest.demise':'Fetal demise',
+      'gest.week':'{n} week', 'gest.weeks':'{n} weeks', 'gest.weeksShort':'{n} wk',
       'lbl.lmpDate':'Date (LMP)', 'lbl.eddDate':'Date (EDD)',
       'rail.priority':'Priority',
       'lbl.ordering':'Ordering site', 'lbl.physician':'Ordering physician', 'lbl.study':'Research study (consent obtained)',
@@ -19737,6 +19749,8 @@
       'menu.clear':'↺ Clear selection', 'menu.added':'· added', 'ui.clearSel':'Clear selection',
       'menu.filter':'Filter by name or code…', 'menu.noResults':'No match',
       'err.required':'This field is required',
+      'err.gestPast':'A last menstrual period cannot be in the future',
+      'err.gestSoon':'More than 40 weeks away — check the due date',
       'ped.title':'Pedigree', 'ped.aria':'Family pedigree', 'ped.proband':'Proband',
       'ped.other':'+ {n} not shown ({list}) — half-siblings and “other” aren’t auto-placed.',
       'flash.incomplete':'Complete the core fields above, then Create becomes available.',
@@ -19763,10 +19777,11 @@
       'ui.removeSign':'Retirer', 'ui.clearSearch':'Effacer la recherche', 'ui.removeRow':'Retirer cette ligne',
       'sec.analysis':'Analyse', 'sec.proband':'Patient (cas index)', 'sec.probandPrenatal':'Patient (cas index, mère)', 'sec.clinical':'Signes cliniques', 'sec.otherClinical':'Autres informations cliniques (facultatives)', 'sec.family':'Analyse familiale',
       'lbl.analysis':'Analyse', 'lbl.prenatal':'Cas prénatal', 'lbl.priority':'Priorité',
-      'lbl.prenatalInfo':'Informations supplémentaires',
+      'lbl.prenatalInfo':'Informations fœtales',
       'lbl.fetalSex':'Sexe (fœtus)', 'fsex.F':'Féminin', 'fsex.M':'Masculin', 'fsex.U':'Indéterminé',
       'lbl.gestAge':'Âge gestationnel',
       'gest.LMP':'DDM — Date des dernières menstruations', 'gest.EDD':'DPA — Date prévue d’accouchement', 'gest.demise':'Fœtus décédé',
+      'gest.week':'{n} semaine', 'gest.weeks':'{n} semaines', 'gest.weeksShort':'{n} sem.',
       'lbl.lmpDate':'Date (DDM)', 'lbl.eddDate':'Date (DPA)',
       'rail.priority':'Priorité',
       'lbl.ordering':'Établissement prescripteur', 'lbl.physician':'Médecin prescripteur', 'lbl.study':'Étude de recherche (consentement obtenu)',
@@ -19838,6 +19853,8 @@
       'menu.clear':'↺ Effacer la sélection', 'menu.added':'· ajouté', 'ui.clearSel':'Effacer la sélection',
       'menu.filter':'Filtrer par nom ou code…', 'menu.noResults':'Aucun résultat',
       'err.required':'Ce champ est requis',
+      'err.gestPast':'Une date de dernières menstruations ne peut pas être dans le futur',
+      'err.gestSoon':'À plus de 40 semaines — vérifiez la date prévue',
       'ped.title':'Pedigree', 'ped.aria':'Pedigree familial', 'ped.proband':'Cas index',
       'ped.other':'+ {n} non affiché(s) ({list}) — les demi-frères/sœurs et « autre » ne sont pas placés automatiquement.',
       'flash.incomplete':'Complétez les champs essentiels ci-dessus, puis « Créer » devient disponible.',
@@ -20301,8 +20318,70 @@
     k.setAttribute('data-i18n', on ? 'rail.motherId' : 'rail.probandId');
     k.textContent = t(k.getAttribute('data-i18n'));
   }
-  /* the gestational-age row mirrors the field as entered — the basis and its date, or the
-     demise — rather than deriving a number of weeks, which is nowhere else in this form. */
+  /* ---------- gestational age ----------
+     CLIN already ships this (clin-portal-ui: `HybridPatientFoetus` holds `gestational_method`
+     + `gestational_date`, and src/utils/age.ts derives the weeks in the view). Same split and
+     the same two formulas here so the products agree: an age is only true on the day it is
+     computed, so the DATE is the value and the age is always derived, never stored.
+     Dates are compared as UTC midnights so a DST boundary cannot shift a day. */
+  function dayNumUTC(str){
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str || '');
+    return m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : null;
+  }
+  function todayUTC(){ var n = new Date(); return Date.UTC(n.getFullYear(), n.getMonth(), n.getDate()); }
+  function dayStrUTC(ms){
+    var d = new Date(ms), p = function(v){ return ('0' + v).slice(-2); };
+    return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate());
+  }
+  var DAY = 864e5, WEEK = 6048e5, TERM = 280;   // 40 weeks, as CLIN uses
+  /* Bounds the arithmetic itself implies, so the picker greys out the impossible dates rather
+     than the form reporting a negative age. They are NOT symmetric:
+       DDM — a last menstrual period is in the past, full stop, so today is the ceiling.
+       DPA — a due date is usually ahead, but an overdue pregnancy has one behind, so there is
+             deliberately no floor. The ceiling is today + 280 days: beyond 40 weeks out the
+             implied gestational age is negative, which cannot be. */
+  function setGestBounds(){
+    var today = todayUTC();
+    var lmp = document.querySelector('[data-field="lmpdate"]');
+    var edd = document.querySelector('[data-field="edddate"]');
+    if(lmp) lmp.setAttribute('max', dayStrUTC(today));
+    if(edd) edd.setAttribute('max', dayStrUTC(today + TERM * DAY));
+  }
+  setGestBounds();
+  /* null when nothing is picked; {basis} for a demise; {basis, date, weeks} once dated */
+  function gestState(){
+    var g = document.querySelector('[data-radio="gestage"] .radio.on');
+    var basis = g ? g.dataset.val : null;
+    if(!basis) return null;
+    if(basis === 'demise') return { basis:basis };
+    var el = document.querySelector('[data-field="' + (basis === 'LMP' ? 'lmpdate' : 'edddate') + '"]');
+    var raw = el ? el.value.trim() : '';
+    var d = dayNumUTC(raw);
+    if(d === null) return { basis:basis, date:'' };
+    var weeks = basis === 'LMP' ? Math.round((todayUTC() - d) / WEEK)
+                                : Math.round((TERM - (d - todayUTC()) / DAY) / 7);
+    /* a typed date can still land outside the bounds the picker enforces */
+    if(weeks < 0) return { basis:basis, date:raw, outOfRange:true };
+    return { basis:basis, date:raw, weeks:weeks };
+  }
+  function weeksLabel(n, short){
+    return t(short ? 'gest.weeksShort' : (Math.abs(n) === 1 ? 'gest.week' : 'gest.weeks'), { n:n });
+  }
+  /* the calculated age, to the right of the date that produced it */
+  function syncGestCalc(){
+    var g = gestState();
+    ['lmp','edd'].forEach(function(k){
+      var el = document.getElementById('gest-' + k + '-calc');
+      if(!el) return;
+      var mine = g && g.basis === (k === 'lmp' ? 'LMP' : 'EDD');
+      el.textContent = (mine && g.weeks != null) ? weeksLabel(g.weeks) : '';
+      var input = document.querySelector('[data-field="' + k + 'date"]');
+      if(mine && g.outOfRange) setFieldError(input, t(k === 'lmp' ? 'err.gestPast' : 'err.gestSoon'));
+      else clearFieldError(input);
+    });
+  }
+
+  /* the rail row carries what is stored (basis + date) and the derived age after it. */
   function syncFetalRows(){
     var on = document.querySelector('[data-check="prenatal"]').classList.contains('on');
     document.getElementById('rail-fetal').toggleAttribute('hidden', !on);
@@ -20312,14 +20391,14 @@
     var fsEl = document.getElementById('sum-fetalsex');
     fsEl.textContent = fs ? t('fsex.' + fs.dataset.val) : '—';   // « Indéterminé » is an answer, so it inks
     fsEl.classList.toggle('done', !!fs);
-    var g = document.querySelector('[data-radio="gestage"] .radio.on');
-    var gv = g ? g.dataset.val : null, out = '—', set = false;
-    if(gv === 'demise'){ out = t('gest.demise'); set = true; }
-    else if(gv === 'LMP' || gv === 'EDD'){
-      var d = document.querySelector('[data-field="' + (gv === 'LMP' ? 'lmpdate' : 'edddate') + '"]');
-      var dv = d && d.value.trim();
-      out = t('gestAbbr.' + gv) + (dv ? ' ' + dv : '');
-      set = !!dv;                                  // a basis with no date yet is not an answer
+    var g = gestState();
+    var out = '—', set = false;
+    if(g && g.basis === 'demise'){ out = t('gest.demise'); set = true; }
+    else if(g){
+      out = t('gestAbbr.' + g.basis) + (g.date ? ' ' + g.date : '');
+      if(g.weeks != null) out += ' · ' + weeksLabel(g.weeks, true);
+      /* a basis with no date is not an answer, and neither is an impossible one */
+      set = !!g.date && !g.outOfRange;
     }
     var gEl = document.getElementById('sum-gestage');
     gEl.textContent = out;
@@ -20330,11 +20409,9 @@
   function prenatalReqs(){
     if(!document.querySelector('[data-check="prenatal"]').classList.contains('on')) return null;
     var fetalOK = !!document.querySelector('[data-seg="fetalsex"] .on');
-    var g = document.querySelector('[data-radio="gestage"] .radio.on');
-    var gv = g ? g.dataset.val : null;
-    var lmp = document.querySelector('[data-field="lmpdate"]'), edd = document.querySelector('[data-field="edddate"]');
-    var gestOK = gv === 'demise' || (gv === 'LMP' && lmp && lmp.value) || (gv === 'EDD' && edd && edd.value);
-    return { fetalOK: fetalOK, gestOK: !!gestOK };
+    var g = gestState();
+    var gestOK = !!g && (g.basis === 'demise' || (!!g.date && !g.outOfRange));
+    return { fetalOK: fetalOK, gestOK: gestOK };
   }
 
   /* ---------- segmented controls ---------- */
@@ -21297,6 +21374,7 @@
     document.getElementById('btn-create').classList.toggle('ready', done === total);
     syncConditionRow();
     syncClinicalRows();
+    syncGestCalc();
     syncFetalRows();
     syncProbandLink();   // section 2 moved, so a mirrored mother's card follows it
     renderPedigree();
