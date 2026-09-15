@@ -33,9 +33,15 @@ cliniques · Analyse familiale** — plus a summary rail tracking required field
 - **HPO search matches the displayed language only** — "hearing" in French returns nothing, by design.
 - **MONDO browser is a shell** — no hierarchy on disk, so it lists the catalog's conditions flat
   and says so on screen.
-- **Cas prénatal** retitles section 2 « Patient (cas index, mère) », prefills Sexe as Féminin, and
-  opens the prenatal block (fetal sex, gestational age, DDM/DPA) at the end of that section. Does
-  **not** change priority.
+- **Cas prénatal** — the proband is the **fetus**; section 2 holds the mother's identity only
+  because a fetus has no patient record of its own, so it retitles to « Patient (cas index,
+  mère) » and prefills Sexe as Féminin. An « Informations fœtales » block opens at the end of
+  that section: sexe fœtal, then DDM / DPA / fœtus décédé with the date tucked under the option
+  it belongs to and the **calculated gestational age** beside it. The rail renames « ID cas
+  index » to « ID mère » and grows a matching fetal block. Does **not** change priority.
+- **A prenatal case is solo by default.** Section 5 stays empty until you add someone; the mother
+  is then an ordinary relative of the fetus, and ticking her into the analysis states the patient
+  record already captured in section 2 rather than asking for it twice.
 - **Analyse familiale owns both family roles** — one card per relative records the family history
   (lien de parenté · sexe · statut · préciser), and ticking « Inclure dans l'analyse génétique »
   opens the patient-identification fields, because a member in the analysis becomes a Patient in

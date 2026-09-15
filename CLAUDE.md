@@ -144,8 +144,11 @@ Sexe is also prefilled Féminin: in a prenatal case **the proband is the fetus**
 holds the *mother's* identity only because a fetus has no Patient record of its own. Everything
 in it is hers; the fetus's own facts are the prenatal block at the end. Identifiant\* | Établissement du patient\*, then the lookup status
 line spanning the row, then RAMQ | Date de naissance\*, Sexe\* | Statut vital\*, Prénom | Nom. The
-prenatal-only block (sexe fœtal, âge gestationnel, dates DDM/DPA) opens at the **end of this
-section**, driven by the checkbox in section 1.
+prenatal-only block — headed **« Informations fœtales »**, matching the rail's block — opens at
+the **end of this section**, driven by the checkbox in section 1: Sexe (fœtus), then Âge
+gestationnel as DDM / DPA / Fœtus décédé. **The date sits directly under the option that asks
+for it**, 150 px wide and with no label of its own (the option is the label; the `lmp_date` /
+`edd_date` annotations moved onto the options), and the **calculated age shows to its right**.
 
 **3 · Signes cliniques** — the ask, then the search row (HPO search + « Parcourir l'arbre HPO »)
 **directly under it**, then « Phénotypes observés (n) » and « Suggestions pour cette analyse »
@@ -197,8 +200,8 @@ hers — swapping between two i18n keys the way section 2's title does, so a lan
 repaints it by itself. A **« Informations fœtales »** block (`#rail-fetal`, same `.optlabel`
 treatment) then carries Sexe fœtal and Âge gestationnel. It sits **above** « Ajouts facultatifs »
 because both rows are required in a prenatal case, and disappears entirely otherwise. The
-gestational-age row mirrors the field as entered — « DDM 2026-04-02 », « DPA … » or
-« Fœtus décédé » — and deliberately does not compute a number of weeks.
+gestational-age row carries what is stored **and** what is derived from it —
+« DDM 2026-04-02 · 24 sem. », or « Fœtus décédé » alone.
 
 The shell is **1200 px** wide and the rail **340 px** (both widened on 2026-09-10 to give the
 pedigree somewhere to live). The rail is `position:sticky; top:24px`: with a pedigree drawn it
@@ -358,6 +361,18 @@ room; it is not clipped.
 - **The pedigree's proband node reads the fetal sex in prenatal mode**, not section 2's Sexe,
   which prenatal prefills Féminin. Both segments use the same `M|F|U` codes. Before this it drew
   the mother twice — once as « Cas index », once as « Mère ».
+- **Gestational age is stored as a date and derived as an age** (2026-09-15). `gestState()` reads
+  the basis + date; `Math.round(days/7)` from a DDM, `Math.round((280 − daysUntil)/7)` from a DPA,
+  UTC midnights so a DST boundary cannot shift a day. **These are CLIN's formulas** — see
+  `clin-portal-ui`, `src/utils/age.ts`, whose `HybridPatientFoetus` holds `gestational_method`
+  (DDM | DPA | DECEASED) + `gestational_date` and derives the weeks in the view. An age is only
+  true on the day it is computed, so the date is the value and the age is always a view.
+  `prenatalReqs()` reads the same `gestState()`, so the gate and the display cannot drift.
+- **The date bounds are asymmetric, deliberately.** DDM is capped at **today** — a last menstrual
+  period is in the past, full stop — with no floor. DPA is capped at **today + 280 days**, past
+  which the implied age is negative, and has **no floor**: an overdue pregnancy has a due date
+  behind it. A typed out-of-range date shows no age, leaves the rail row muted, fails the gate
+  and marks the field (`err.gestPast` / `err.gestSoon`) rather than blocking Create in silence.
 - **User text is never concatenated into `innerHTML`.** There is no escaping helper in this file;
   mixed content is built from `createTextNode` / `createElement` (`markMatch`, `renderChips`,
   `paintProbandRef`). An identifier is free text, so this matters.
@@ -379,7 +394,26 @@ Ranked by how much they block work:
 7. Whether the search should also apply to **établissement prescripteur / du patient** — plugging
    in the real Quebec establishment list would trip the 8-entry threshold on its own. **On hold**
    as of 2026-09-15.
-8. **Should the rail compute a real gestational age?** It currently echoes the field
-   (« DDM 2026-04-02 »). Deriving "23 sem. 2 j" is what a row labelled « Âge gestationnel »
-   arguably promises, and is on-thesis for derive-and-hide, but there is no date arithmetic
-   anywhere else in this file and a wrong number in front of clinicians is worse than an echo.
+8. **Radiant has no prenatal fields at all.** Checked on 2026-09-15 against
+   `radiant-network/radiant-portal`: across all 20 migrations, `public.cases`, `public.patient`
+   and the `CaseBatch` API, the only prenatal thing in the model is
+   `category_code ∈ {prenatal, postnatal}`. There is **no** gestational age, LMP/EDD date or
+   fetal sex. So this form's `(gestational_age)`, `(lmp_date)`, `(edd_date)` and
+   `(fetal_sex_code)` annotations are **proposals, not references**. CLIN already ships the
+   shape (`gestational_method` + `gestational_date`, weeks derived in the view) — should Radiant
+   adopt it? Note CLIN also has `NEW_BORN` alongside `PRENATAL`, which Radiant's `category_code`
+   does not.
+9. **Section 5's relation list is wider than Radiant accepts.** The API constrains
+   `relation_to_proband_code` to `mother father brother sister sibling proband`; this form offers
+   Mother · Father · Sister · Brother · **Daughter · Son · Half-sibling · Other**. The last four
+   would be rejected, and the form offers neither `sibling` nor `proband`. Widening the list was
+   a deliberate call for family history (2026-09-10) — the gap is real either way.
+10. **`submitter_patient_id_type` is `NOT NULL` in `public.patient`**, and this form dropped the
+    id-type dropdown on 2026-09-10. The batch API does not carry it, so something defaults it
+    server-side. Confirm what, rather than assume.
+11. **A prenatal case may submit the mother twice.** The proband patient row carries her
+    identifiers (the fetus has none), so adding « Mère » in section 5 sends the same
+    organization + identifier again under `relation_to_proband_code: mother`, against
+    `UNIQUE (organization_code, submitter_patient_id)`. The schema has clearly thought about
+    fetuses — the `jhn` index comments "newborns/fetuses have none yet" — so this is worth
+    asking the Radiant team.
