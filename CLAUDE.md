@@ -330,9 +330,6 @@ Ranked by how much they block work:
 5. **French HPO terms are largely machine-translated** and need a French clinician's review.
 6. **Two apparent duplicates in the catalog**: NPC and NEUTP both read « Neutropénie congénitale »;
    HLEB and HLH both carry act number 55412. Data-entry error, or a real distinction?
-7. **Switching analysis does not clear an already-derived indication** — MMG → RAPIDE (no derived
-   condition) leaves « Maladie neuromusculaire » in the field. *Clearing* the analysis does clear
-   it. Only the switch case is inconsistent.
-8. Whether the search should also apply to **établissement prescripteur / du patient** — plugging
+7. Whether the search should also apply to **établissement prescripteur / du patient** — plugging
    in the real Quebec establishment list would trip the 8-entry threshold on its own.
-9. **`README.md` is stale**, and **version A** has not followed any of this.
+8. **Version A** has not followed any of this.
