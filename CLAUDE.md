@@ -15,20 +15,21 @@ The design idea it explores is **"derive-and-hide"**: any required value the sys
 from something already entered is dropped from the form and set behind the scenes. Case type, for
 example, comes from the chosen analysis and shows as a badge instead of a field.
 
-| File | Version | Picker placement |
-|---|---|---|
-| `case-create-signs-inline.html` | **B — inline** | version A's picker unpacked into the form; only the HPO tree and the MONDO browser open a modal |
-| `case-create-signs-modal.html` | A — modal | one button opens a picker dialog; the tree opens a second modal on top |
+The wireframe is **`case-create-signs-inline.html`** — version **B**, the inline picker: the
+picker sits unpacked in the form, and only the HPO tree and the MONDO browser open a modal.
+Version A (`case-create-signs-modal.html`, one button opening a picker dialog on top of which the
+tree opened a second) was **deleted on 2026-09-15**, untouched since 2026-09-07 and far drifted
+from B. Git history and the `lucas-pre-vf` branch (`935ad60`) still have it.
+
+`case-create-essai.html` is Vincent's family-section trial, kept for comparison.
 
 `README.md` is the demo-facing description (pros/cons, demo tips). It has **not** been updated
 through this session — it still describes the pre-review form. Fix it before the next demo.
 
 ## Current work — read this first
 
-**Vincent is reviewing version B (`case-create-signs-inline.html`).** Version A has not been
-touched since 2026-09-07 and the two have drifted far apart: A still has the consent checkbox, the
-old section titles, the id-type dropdown, the fake analyses' suggestion lists. Do not assume a
-change made in B exists in A.
+**Vincent is reviewing version B (`case-create-signs-inline.html`)** — the only wireframe left
+to change.
 
 There is no longer a separate review file. `revue-maquette-inline.md` was deleted on 2026-09-08,
 once version B had changed enough that a running changelog stopped earning its keep — feedback now
@@ -332,4 +333,3 @@ Ranked by how much they block work:
    HLEB and HLH both carry act number 55412. Data-entry error, or a real distinction?
 7. Whether the search should also apply to **établissement prescripteur / du patient** — plugging
    in the real Quebec establishment list would trip the 8-entry threshold on its own.
-8. **Version A** has not followed any of this.

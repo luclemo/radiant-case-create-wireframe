@@ -7,9 +7,8 @@ and set behind the scenes. Case type, for example, is derived from the analysis 
 Open **`case-create-signs-inline.html`** in a real browser (double-click, or `open <file>`). The
 form reacts as you fill it, so a static preview won't work.
 
-Two other files sit beside it, neither of them the current design:
+One other file sits beside it, not the current design:
 
-- `case-create-signs-modal.html` — an abandoned earlier version. Ignore it.
 - `case-create-essai.html` — a trial exploring the same one-family-section idea in a different
   shape (badge and accent border per member, a composition banner). Kept for comparison; the
   answer that shipped into the inline version is the per-member checkbox described below.
