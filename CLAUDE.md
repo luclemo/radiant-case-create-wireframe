@@ -1,9 +1,9 @@
 # CLAUDE.md
 
 Notes for whoever (human or Claude) picks this repo up next — including on a different machine.
-Last brought up to date: **2026-09-09**, when Lucas pulled Vincent's fork back into the
-original repo. Everything below the "Working rules" section is Vincent's, from the 2026-09-08
-review session, and has not been re-verified since.
+Last brought up to date: **2026-09-15**, when Lucas retired version A and reworked prenatal
+mode. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
+not been re-verified since.
 
 ## What this repo is
 
@@ -23,8 +23,8 @@ from B. Git history and the `lucas-pre-vf` branch (`935ad60`) still have it.
 
 `case-create-essai.html` is Vincent's family-section trial, kept for comparison.
 
-`README.md` is the demo-facing description (pros/cons, demo tips). It has **not** been updated
-through this session — it still describes the pre-review form. Fix it before the next demo.
+`README.md` is the demo-facing description (pros/cons, demo tips), rewritten on 2026-09-10 and
+current as of this session.
 
 ## Current work — read this first
 
@@ -105,8 +105,11 @@ Single 1.6 MB HTML files. Habits that make that bearable:
 
 ### Testing — no runner, drive headless Chrome
 
-`google-chrome` is installed. Copy the file to the scratch directory, inject a `<script>` before
-`</body>` that drives the DOM and dumps `PASS`/`FAIL` lines into a `<pre id="TESTOUT">`, then:
+Chrome is installed, but **not as `google-chrome` on macOS** — it is
+`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` there, so declare it once
+(`CHROME="…"`) and call `"$CHROME"`. Copy the file to the scratch directory, inject a `<script>`
+before `</body>` that drives the DOM and dumps `PASS`/`FAIL` lines into a `<pre id="TESTOUT">`,
+then:
 
 ```bash
 google-chrome --headless --disable-gpu --no-sandbox \
@@ -137,7 +140,9 @@ obtenu) » (Pragmatic · Care4Rare · RQDM), full width — picking a study *is*
 is no separate checkbox; Médecin prescripteur | Établissement prescripteur.
 
 **2 · Patient (cas index)** — title becomes « Patient (cas index, mère) » in prenatal mode, where
-Sexe is also prefilled Féminin. Identifiant\* | Établissement du patient\*, then the lookup status
+Sexe is also prefilled Féminin: in a prenatal case **the proband is the fetus**, and this section
+holds the *mother's* identity only because a fetus has no Patient record of its own. Everything
+in it is hers; the fetus's own facts are the prenatal block at the end. Identifiant\* | Établissement du patient\*, then the lookup status
 line spanning the row, then RAMQ | Date de naissance\*, Sexe\* | Statut vital\*, Prénom | Nom. The
 prenatal-only block (sexe fœtal, âge gestationnel, dates DDM/DPA) opens at the **end of this
 section**, driven by the checkbox in section 1.
@@ -173,10 +178,27 @@ patient-identification block (Identifiant | Établissement du patient / RAMQ | D
 Prénom | Nom — the proband's fields minus sex and life status), because a member in the analysis
 becomes a Patient in Radiant.
 
+**One exception, prenatal only** (2026-09-15): section 2 already holds the mother's identity, so
+a « Mère » card ticked into the analysis does not re-ask for it. In place of the block it shows
+one derived line, `.probandref` — « Dossier patient : **A-77** · CHU Sainte-Justine ·
+Marie-Claude Gagnon » — built by `paintProbandRef()` from section 2 and repainted by every
+`recompute()`. The six inputs stay **empty and hidden** behind it, so nothing stale reaches the
+case and switching the card to another relative opens a blank block rather than handing her
+identifiers to a sister. `mirroredFamRow()` decides: prenatal on **and** relation Mother **and**
+in the analysis. Break any one and the ordinary block comes back.
+
 **Rail** — Analyse (+ germline/somatic badge) · Catégorie · Priorité · ID cas index ·
 Établissement du patient · Sexe · Date de naissance, then « Ajouts facultatifs »: Indication
 principale · Phénotypes · Consanguinité · Ethnicité(s) · Note clinique · Famille, then the
 **live pedigree** under the Famille row, and the `x sur 5 champs requis` gate.
+
+In prenatal mode (2026-09-15) « ID cas index » renames itself to « ID mère » — the identifier is
+hers — swapping between two i18n keys the way section 2's title does, so a language switch
+repaints it by itself. A **« Informations fœtales »** block (`#rail-fetal`, same `.optlabel`
+treatment) then carries Sexe fœtal and Âge gestationnel. It sits **above** « Ajouts facultatifs »
+because both rows are required in a prenatal case, and disappears entirely otherwise. The
+gestational-age row mirrors the field as entered — « DDM 2026-04-02 », « DPA … » or
+« Fœtus décédé » — and deliberately does not compute a number of weeks.
 
 The shell is **1200 px** wide and the rail **340 px** (both widened on 2026-09-10 to give the
 pedigree somewhere to live). The rail is `position:sticky; top:24px`: with a pedigree drawn it
@@ -316,6 +338,29 @@ room; it is not clipped.
 - **Section 5 offers the full relation list again** (`OPTIONS.relation`, 8 entries), not the four
   sequenceable ones: now that it carries family history, a reported relative can be a
   half-sibling or an « Autre ». The pedigree still lists those rather than placing them.
+- **In a prenatal case the fetus is the proband, and the mother is the patient of record**
+  (2026-09-15, Lucas). A fetus has no Patient record, so section 2 carries her identity. Such a
+  case is **solo by default** — section 5 does nothing until the user adds someone — and the
+  mother is then an ordinary relative of the fetus, added and removed like any other. What the
+  kickoff called "« Mère » is the proband" was wrong, and reversing it is what fixed the
+  pedigree; don't re-derive it from the old wording.
+- **The mother's identification is stated, not re-asked** (2026-09-15). This is derive-and-hide
+  applied to section 5: a read-only copy of section 2 was built first and cut, because six inert
+  fields cost 240 px — 40% of section 5 — to say nothing new, and fields that look editable but
+  are not invite clicks that do nothing. The one line replaced it at 43 px. « Inclure dans
+  l'analyse génétique » stays on her card either way: solo vs trio is a real clinical decision
+  and is not derivable.
+- **Leaving « Mère » clears the block, a relationship correction does not.** `famApplyRelation()`
+  empties a bound card on the way out, because those values are section 2's and the user never
+  typed them there — keeping them would hand the mother's identifiers to a sister. On an ordinary
+  card the same edit keeps what was typed: that is the user's own input, and a relationship fix
+  is usually a correction to the *relationship*, not the person.
+- **The pedigree's proband node reads the fetal sex in prenatal mode**, not section 2's Sexe,
+  which prenatal prefills Féminin. Both segments use the same `M|F|U` codes. Before this it drew
+  the mother twice — once as « Cas index », once as « Mère ».
+- **User text is never concatenated into `innerHTML`.** There is no escaping helper in this file;
+  mixed content is built from `createTextNode` / `createElement` (`markMatch`, `renderChips`,
+  `paintProbandRef`). An identifier is free text, so this matters.
 
 ## Open questions
 
@@ -332,4 +377,9 @@ Ranked by how much they block work:
 6. **Two apparent duplicates in the catalog**: NPC and NEUTP both read « Neutropénie congénitale »;
    HLEB and HLH both carry act number 55412. Data-entry error, or a real distinction?
 7. Whether the search should also apply to **établissement prescripteur / du patient** — plugging
-   in the real Quebec establishment list would trip the 8-entry threshold on its own.
+   in the real Quebec establishment list would trip the 8-entry threshold on its own. **On hold**
+   as of 2026-09-15.
+8. **Should the rail compute a real gestational age?** It currently echoes the field
+   (« DDM 2026-04-02 »). Deriving "23 sem. 2 j" is what a row labelled « Âge gestationnel »
+   arguably promises, and is on-thesis for derive-and-hide, but there is no date arithmetic
+   anywhere else in this file and a wrong number in front of clinicians is worse than an echo.
