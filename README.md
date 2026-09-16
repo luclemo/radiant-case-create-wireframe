@@ -16,7 +16,8 @@ One other file sits beside it, not the current design:
 ## The form
 
 Five sections — **Analyse · Patient (cas index) · Signes cliniques · Autres informations
-cliniques · Analyse familiale** — plus a summary rail tracking required fields.
+cliniques · Analyse familiale** — plus a summary rail tracking the seven required fields (nine
+in a prenatal case).
 
 - **Analysis menu** — the real 37-analysis catalog (`analysis_catalog_qlin.csv`), searchable.
   Matches anywhere in the string, since names are prefixed with act numbers.

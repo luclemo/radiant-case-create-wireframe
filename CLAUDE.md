@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 Notes for whoever (human or Claude) picks this repo up next — including on a different machine.
-Last brought up to date: **2026-09-16**, when Statut vital left the form. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
+Last brought up to date: **2026-09-16**, when first and last name and clinical signs joined
+the required gate. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
 not been re-verified since.
 
 ## What this repo is
@@ -142,7 +143,8 @@ is no separate checkbox; Médecin prescripteur | Établissement prescripteur.
 Sexe is also prefilled Féminin: in a prenatal case **the proband is the fetus**, and this section
 holds the *mother's* identity only because a fetus has no Patient record of its own. Everything
 in it is hers; the fetus's own facts are the prenatal block at the end. Identifiant\* | Établissement du patient\*, then the lookup status
-line spanning the row, then RAMQ | **DDN\* · Sexe\*** sharing one cell, then Prénom | Nom.
+line spanning the row, then RAMQ | **DDN\* · Sexe\*** sharing one cell, then Prénom\* | Nom\*
+(both **required since 2026-09-16**, and counted as one gate item between them).
 The pair fits 368 px only because both halves shrink: the label to « DDN » / "DOB" (`lbl.dobShort`,
 §2 only — `lbl.dob` still spells it out in §5 and the patient dialog), and Sexe to **initials with
 the full word as tooltip**, the treatment §5's cards already use. Full Sexe labels need 393 px.
@@ -195,15 +197,23 @@ identifiers to a sister. `mirroredFamRow()` decides: prenatal on **and** relatio
 in the analysis. Break any one and the ordinary block comes back.
 
 **Rail** — Analyse (+ germline/somatic badge) · Catégorie · Priorité · ID cas index ·
-Établissement du patient · Sexe · Date de naissance, then « Ajouts facultatifs »: Indication
-principale · Phénotypes · Consanguinité · Ethnicité(s) · Note clinique · Famille, then the
-**live pedigree** under the Famille row, and the `x sur 5 champs requis` gate.
+Établissement du patient · Sexe · Date de naissance · **Nom** · **Phénotypes**, then
+« Ajouts facultatifs »: Indication principale · Consanguinité · Ethnicité(s) · Note clinique ·
+Famille, then the **live pedigree** under the Famille row, and the `x sur 7 champs requis` gate.
+
+« Nom » and « Phénotypes » both joined the required group on 2026-09-16 — see the decisions
+below. « Nom » sits last among the identity rows, the way section 2 places the names last in
+its own grid. « Phénotypes » sits after it but **above** the prenatal « Informations fœtales »
+block, even though section 3 follows section 2 in the form: that block is a *captioned* group,
+and a captioned group has to end at the next caption. Left below it, the proband's phenotype
+count read as one more fetal fact.
 
 In prenatal mode (2026-09-15) « ID cas index » renames itself to « ID mère » — the identifier is
 hers — swapping between two i18n keys the way section 2's title does, so a language switch
 repaints it by itself. A **« Informations fœtales »** block (`#rail-fetal`, same `.optlabel`
 treatment) then carries Sexe fœtal and Âge gestationnel. It sits **above** « Ajouts facultatifs »
-because both rows are required in a prenatal case, and disappears entirely otherwise. The
+because both rows are required in a prenatal case (the gate goes 7 → 9), and disappears
+entirely otherwise. The
 gestational-age row carries what is stored **and** what is derived from it —
 « DDM 2026-04-02 · 24 sem. », or « Fœtus décédé » alone.
 
@@ -232,8 +242,11 @@ room; it is not clipped.
   no control in the form does any more. `localize()` copies a div-select's `data-i18n-ph` into
   `dataset.ph`, which is what makes clearing one restore *its* placeholder and not the generic
   one. Free-text placeholders say what to type too: the prescriber field asks « Qui demande
-  cette analyse », and the name fields read « Prénom (facultatif) » / « Nom (facultatif) »
-  rather than a bare « Facultatif » (`ph.optional` and `ph.freetext` were retired).
+  cette analyse ». The name fields read « Prénom » / « Nom » — they said
+  « Prénom (facultatif) » / « Nom (facultatif) » until **2026-09-16, when the names became
+  required** and the parenthetical said the opposite of the truth. A bare echo of the label is
+  all that is left to say: unlike the identifier or the health number, a name has no format or
+  example to offer. (`ph.optional` and `ph.freetext` were retired in 2026-09-10.)
 - **« Inconnu » is an answer, so the rail inks it** (2026-09-10). A rail value goes dark
   (`.v.done`) as soon as the user has answered, Unknown included — Consanguinité « Inconnue »
   and Sexe « Inconnu » read like any other filled value. Only the em-dash placeholder stays
@@ -393,6 +406,32 @@ room; it is not clipped.
   The slash is drawn **white on a filled symbol** — the proband is hardcoded `aff:'Affected'`,
   so a `#1f2328` slash on a `#1f2328` fill was invisible. Position assertions found it and
   passed; only the screenshot showed it was not there. Colour needs the screenshot.
+- **First and last name are required, and count as ONE gate item** (2026-09-16). The base gate
+  went **5 → 7**: the five it was (analysis, identifier, patient organization, sex, date of
+  birth) plus the name row plus clinical signs; **9 in a prenatal case**, with fetal sex and
+  gestational age. One item and not two because the rail's count *is* its rows — `recompute()`
+  builds `rows[]` as `[rail row id, satisfied]` pairs and the gate is how many of those are
+  inked — and the two names share one rail row. Both halves are needed to tick it: a first name
+  on its own is a half-answer and the row stays muted while showing what there is.
+  `validateConditionals()` checks the two **separately** on a section 5 card ticked into the
+  analysis, because that function marks fields rather than counting rows, and a field is either
+  filled or it is not.
+  - The mirrored « Mère » card is still skipped there: her identity is section 2's, which the
+    core gate already requires.
+  - §5's « Dossier patient » line **keeps** its no-name fallback. It looks unreachable now that
+    the names are required, but the line repaints on every `recompute()` — i.e. on every
+    keystroke — so it is read long before the names are typed. Only *Create* is gated.
+
+- **Clinical signs joined the required gate** (2026-09-16). Section 3's instruction has carried a
+  required `*` since it was written, while the rail filed « Phénotypes » under « Ajouts
+  facultatifs » — the two said opposite things and the rail was the one that was wrong. The row
+  moved into the required group and into `rows[]`, satisfied by **at least one OBSERVED
+  phenotype**: a not-observed term is an aside, and section 3 asks for an observed one. The row's
+  **text still counts every term**, observed and not-observed together, so the count answers
+  "what does this case record" while the ink answers "is the requirement met". `sumPheno()`
+  therefore sets the text only and `recompute()` owns the ink, so the two cannot drift; the three
+  call sites that used to call `sumPheno()` on a phenotype change now call `recompute()`.
+
 - **User text is never concatenated into `innerHTML`.** There is no escaping helper in this file;
   mixed content is built from `createTextNode` / `createElement` (`markMatch`, `renderChips`,
   `paintProbandRef`). An identifier is free text, so this matters.

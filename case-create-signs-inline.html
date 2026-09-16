@@ -536,7 +536,8 @@
                  control out of line with its neighbour's -->
             <span class="lookup" id="patient-lookup"></span>
             <!-- the identifying pair first, then the demographics two by two: health number and
-                 date of birth, sex and life status, and the optional names last (2026-09-08) -->
+                 date of birth, sex and life status, and the names last (2026-09-08). The names
+                 became required on 2026-09-16 and count as ONE gate item between them. -->
             <div class="f">
               <label><span data-i18n="lbl.healthNo">Health number</span> <span class="key">(jhn)</span><sup class="fn">6</sup></label>
               <input class="ctrl" type="text" data-i18n-ph="ph.jhn" placeholder="RAMQ (QC) or regional JHN" data-field="jhn">
@@ -558,12 +559,12 @@
               </div>
             </div>
             <div class="f">
-              <label><span data-i18n="lbl.firstName">First name</span> <span class="key">(first_name)</span></label>
-              <input class="ctrl" type="text" data-i18n-ph="ph.firstName" placeholder="First name (optional)" data-field="firstname">
+              <label><span data-i18n="lbl.firstName">First name</span> <span class="req">*</span> <span class="key">(first_name)</span></label>
+              <input class="ctrl" type="text" data-i18n-ph="ph.firstName" placeholder="First name" data-field="firstname">
             </div>
             <div class="f">
-              <label><span data-i18n="lbl.lastName">Last name</span> <span class="key">(last_name)</span></label>
-              <input class="ctrl" type="text" data-i18n-ph="ph.lastName" placeholder="Last name (optional)" data-field="lastname">
+              <label><span data-i18n="lbl.lastName">Last name</span> <span class="req">*</span> <span class="key">(last_name)</span></label>
+              <input class="ctrl" type="text" data-i18n-ph="ph.lastName" placeholder="Last name" data-field="lastname">
             </div>
           </div>
 
@@ -714,11 +715,24 @@
         <div class="sumrow"><span class="k" data-i18n="rail.issuing">Patient organization</span><span class="v" id="sum-issuing">—</span></div>
         <div class="sumrow"><span class="k" data-i18n="rail.sex">Sex</span><span class="v" id="sum-sex">—</span></div>
         <div class="sumrow"><span class="k" data-i18n="rail.dob">Date of birth</span><span class="v" id="sum-dob">—</span></div>
+        <!-- one row for both names, placed last among the identity rows the way section 2 places
+             them last in its grid. They became required on 2026-09-16 and count as ONE gate item:
+             one rail row, one tick — the rail's count is how many of these rows are inked. -->
+        <div class="sumrow"><span class="k" data-i18n="rail.name">Name</span><span class="v" id="sum-name">—</span></div>
+        <!-- Phenotypes is required, not optional: section 3's instruction has always carried a
+             `*` asking for at least one OBSERVED phenotype, while this row sat under « Optional
+             additions » saying the opposite (fixed 2026-09-16). The count still counts every
+             term, observed and not-observed alike; only an OBSERVED one inks it.
+             It sits ABOVE « Informations fœtales » rather than after it, even though section 3
+             follows section 2 in the form: that block is a CAPTIONED group, and a captioned
+             group has to end at the next caption. Left below it, the proband's phenotype count
+             read as one more fetal fact. -->
+        <div class="sumrow"><span class="k" data-i18n="rail.pheno">Phenotypes</span><span class="v" id="sum-pheno">0 terms</span></div>
 
         <!-- prenatal only. Everything above this describes the MOTHER — she is the patient of
              record, which is why the identifier row renames itself — so the fetus's own facts
              get their own block rather than sitting in among hers. Both rows are required in a
-             prenatal case (the gate goes 5 -> 7), so the block sits ABOVE « Optional additions »,
+             prenatal case (the gate goes 7 -> 9), so the block sits ABOVE « Optional additions »,
              and disappears entirely in a postnatal case. -->
         <div id="rail-fetal" hidden>
           <div class="optlabel" style="margin:16px 0 2px" data-i18n="rail.fetal">Fetal information</div>
@@ -728,7 +742,6 @@
 
         <div class="optlabel" style="margin:16px 0 2px" data-i18n="rail.optAdditions">Optional additions</div>
         <div class="sumrow"><span class="k" data-i18n="rail.condition">Primary indication</span><span class="v" id="sum-condition">—</span></div>
-        <div class="sumrow"><span class="k" data-i18n="rail.pheno">Phenotypes</span><span class="v" id="sum-pheno">0 terms</span></div>
         <div class="sumrow"><span class="k" data-i18n="rail.consang">Consanguinity</span><span class="v" id="sum-consang">Unknown</span></div>
         <div class="sumrow"><span class="k" data-i18n="rail.ancestry">Ethnicities</span><span class="v" id="sum-ancestry">—</span></div>
         <div class="sumrow"><span class="k" data-i18n="rail.note">Clinical note</span><span class="v" id="sum-note">—</span></div>
@@ -739,7 +752,7 @@
 
         <!-- progress sits at the end of the list, right above the submit button -->
         <div class="pct"><i id="pct-bar"></i></div>
-        <div class="note" style="text-align:right" id="req-count">0 of 5 required fields</div>
+        <div class="note" style="text-align:right" id="req-count">0 of 7 required fields</div>
 
         <div class="cta" id="btn-create" data-i18n="rail.create">Create case</div>
         <div class="cta ghost" id="btn-draft" data-i18n="rail.draft">Save draft</div>
@@ -19725,7 +19738,7 @@
       'ph.selIssuing':'Select an organization…', 'ph.selAncestry':'Select ethnicities…',
       'ph.selRelation':'Select a relationship…',
       'ph.idValue':'MRN, Study code, etc…', 'ph.physician':'Who is requesting this analysis',
-      'ph.firstName':'First name (optional)', 'ph.lastName':'Last name (optional)',
+      'ph.firstName':'First name', 'ph.lastName':'Last name',
       'ph.jhn':'RAMQ (QC) or regional JHN', 'ph.dob':'YYYY-MM-DD',
       'ph.condition':'Search an indication (name or MONDO:…)',
       'lookup.searching':'Looking for an existing patient…',
@@ -19744,7 +19757,7 @@
       'type.Germline':'Germline', 'type.Somatic':'Somatic',
       'rail.summary':'Case summary', 'rail.analysis':'Analysis', 'rail.category':'Category', 'rail.probandId':'Proband ID',
       'rail.issuing':'Patient organization', 'rail.sex':'Sex', 'rail.dob':'Date of birth', 'rail.optAdditions':'Optional additions',
-      'rail.motherId':'Mother ID', 'rail.fetal':'Fetal information', 'rail.fetalSex':'Fetal sex', 'rail.gestAge':'Gestational age',
+      'rail.motherId':'Mother ID', 'rail.name':'Name', 'rail.fetal':'Fetal information', 'rail.fetalSex':'Fetal sex', 'rail.gestAge':'Gestational age',
       'gestAbbr.LMP':'LMP', 'gestAbbr.EDD':'EDD',
       'rail.condition':'Primary indication', 'rail.pheno':'Phenotypes', 'rail.consang':'Consanguinity', 'rail.ancestry':'Ethnicities',
       'rail.note':'Clinical note', 'rail.family':'Family', 'rail.create':'Create case', 'rail.draft':'Save draft',
@@ -19828,7 +19841,7 @@
       'ph.selIssuing':'Sélectionner un établissement…', 'ph.selAncestry':'Sélectionner des ethnicités…',
       'ph.selRelation':'Sélectionner un lien de parenté…',
       'ph.idValue':'MRN, code de l’étude, etc…', 'ph.physician':'Qui demande cette analyse',
-      'ph.firstName':'Prénom (facultatif)', 'ph.lastName':'Nom (facultatif)',
+      'ph.firstName':'Prénom', 'ph.lastName':'Nom',
       'ph.jhn':'RAMQ (QC) ou NAM régional', 'ph.dob':'AAAA-MM-JJ',
       'ph.condition':'Rechercher une indication (nom ou MONDO:…)',
       'lookup.searching':'Recherche d’un patient existant…',
@@ -19847,7 +19860,7 @@
       'type.Germline':'Germinal', 'type.Somatic':'Somatique',
       'rail.summary':'Résumé du cas', 'rail.analysis':'Analyse', 'rail.category':'Catégorie', 'rail.probandId':'ID cas index',
       'rail.issuing':'Établissement du patient', 'rail.sex':'Sexe', 'rail.dob':'Date de naissance', 'rail.optAdditions':'Ajouts facultatifs',
-      'rail.motherId':'ID mère', 'rail.fetal':'Informations fœtales', 'rail.fetalSex':'Sexe fœtal', 'rail.gestAge':'Âge gestationnel',
+      'rail.motherId':'ID mère', 'rail.name':'Nom', 'rail.fetal':'Informations fœtales', 'rail.fetalSex':'Sexe fœtal', 'rail.gestAge':'Âge gestationnel',
       'gestAbbr.LMP':'DDM', 'gestAbbr.EDD':'DPA',
       'rail.condition':'Indication principale', 'rail.pheno':'Phénotypes', 'rail.consang':'Consanguinité', 'rail.ancestry':'Ethnicité(s)',
       'rail.note':'Note clinique', 'rail.family':'Famille', 'rail.create':'Créer le cas', 'rail.draft':'Enregistrer le brouillon',
@@ -20271,7 +20284,7 @@
 
   /* ---------- prenatal: reveal the extra fields and rename section 2. Switching prenatal OFF
        clears the revealed fields, so nothing hidden submits. Fetal sex + gestational age are
-       folded into the required gate by recompute() (5 -> 7). Priority is deliberately NOT touched
+       folded into the required gate by recompute() (7 -> 9). Priority is deliberately NOT touched
        here: it is always the user's call (2026-09-08). ---------- */
   /* section 2's title swaps between two i18n keys, so a language switch repaints it by itself */
   function syncProbandTitle(on){
@@ -20594,11 +20607,11 @@
     clearFieldError(idInput); recompute(); runLookup();
   });
   dobInput.addEventListener('input', recompute);
-  /* the names gate nothing, so they never needed a listener — but the mother's « Dossier
-     patient » line in section 5 names her, and has to follow what is typed here */
+  /* the names are a counted row since 2026-09-16, so they run the whole gate — which also
+     repaints the mother's « Dossier patient » line in section 5, since that line names her */
   ['firstname','lastname'].forEach(function(f){
     var el = document.querySelector('[data-field="'+f+'"]');
-    if(el) el.addEventListener('input', syncProbandLink);
+    if(el) el.addEventListener('input', recompute);
   });
 
   /* ---------- phenotypes: the HPO clinical-signs picker, INLINE (Version B) ----------
@@ -20615,12 +20628,12 @@
   function toggleObserved(id){
     var i = pheno.observed.map(function(o){ return o.id; }).indexOf(id);
     if(i>=0) pheno.observed.splice(i,1); else if(!phHas('negative', id)) pheno.observed.push({ id:id, onset:'unknown' });
-    renderPheno(); sumPheno();
+    renderPheno(); recompute();
   }
   function toggleNegative(id){
     var i = pheno.negative.indexOf(id);
     if(i>=0) pheno.negative.splice(i,1); else if(!phHas('observed', id)) pheno.negative.push(id);
-    renderPheno(); sumPheno();
+    renderPheno(); recompute();
   }
   function setOnset(id, v){ var o = pheno.observed.filter(function(x){ return x.id===id; })[0]; if(o) o.onset = v; }
 
@@ -20751,11 +20764,13 @@
   }
   function renderPheno(){ renderObservedSelected(); renderSuggestions(); renderSearchResults();
                           renderNegSelected(); }
+  /* the count covers every term the case records, observed and not-observed alike. The INK is
+     not set here: this is a counted row now, so recompute()'s rows[] owns it, and it takes an
+     OBSERVED term — which is what section 3 actually asks for. */
   function sumPheno(){
     var n = pheno.observed.length + pheno.negative.length;
     var el = document.getElementById('sum-pheno');
     el.textContent = n === 0 ? t('terms.zero') : t(n === 1 ? 'terms.one' : 'terms.many', { n:n });
-    el.classList.toggle('done', n > 0);
   }
 
   /* --- wire the inline picker (the two buttons open the browser modal) --- */
@@ -20898,7 +20913,7 @@
     } else {
       pheno.negative = Object.keys(sel);
     }
-    closeTree(); renderPheno(); sumPheno();
+    closeTree(); renderPheno(); recompute();
   }
   function treeToggleSel(id){
     if(treeState.disabled[id]) return;
@@ -21051,10 +21066,10 @@
           '<input class="ctrl" type="text" data-i18n-ph="ph.jhn" placeholder="RAMQ (QC) or regional JHN" data-fam-seq-jhn></div>' +
         '<div class="f"><label><span data-i18n="lbl.dob">Date of birth</span> <span class="req">*</span> <span class="key">(date_of_birth)</span></label>' +
           '<input class="ctrl" type="date" data-i18n-ph="ph.dob" placeholder="YYYY-MM-DD" data-fam-seq-dob></div>' +
-        '<div class="f"><label><span data-i18n="lbl.firstName">First name</span> <span class="key">(first_name)</span></label>' +
-          '<input class="ctrl" type="text" data-i18n-ph="ph.firstName" placeholder="First name (optional)" data-fam-seq-first></div>' +
-        '<div class="f"><label><span data-i18n="lbl.lastName">Last name</span> <span class="key">(last_name)</span></label>' +
-          '<input class="ctrl" type="text" data-i18n-ph="ph.lastName" placeholder="Last name (optional)" data-fam-seq-last></div>' +
+        '<div class="f"><label><span data-i18n="lbl.firstName">First name</span> <span class="req">*</span> <span class="key">(first_name)</span></label>' +
+          '<input class="ctrl" type="text" data-i18n-ph="ph.firstName" placeholder="First name" data-fam-seq-first></div>' +
+        '<div class="f"><label><span data-i18n="lbl.lastName">Last name</span> <span class="req">*</span> <span class="key">(last_name)</span></label>' +
+          '<input class="ctrl" type="text" data-i18n-ph="ph.lastName" placeholder="Last name" data-fam-seq-last></div>' +
       '</div></div>';
     var rel = row.querySelector('[data-fam="relation"]');
     rel.addEventListener('click', function(){
@@ -21139,7 +21154,8 @@
   /* « Dossier patient : A-77 · CHU Sainte-Justine · Marie-Claude Gagnon » — the identifier is
      emphasised because it is what the user scans for, and organization + identifier is the
      unique key the lookup itself runs on. The name is appended only when section 2 holds one:
-     both name fields are still optional there, so the line has to read without them. Built from
+     the names are required there since 2026-09-16, but this line repaints on every keystroke,
+     so it is still read before they are typed and still has to work without them. Built from
      text nodes, never innerHTML — the identifier is free text and this file has no escaper. */
   function paintProbandRef(el){
     var idv = (idInput.value || '').trim();
@@ -21357,6 +21373,13 @@
     renderAnalysisSummary();
     document.getElementById('sum-proband').textContent = idInput.value.trim() || '—';
     document.getElementById('sum-dob').textContent = dobInput.value.trim() || '—';
+    /* both names on one line, in the order they are written. Required since 2026-09-16, but
+       the row only inks once BOTH halves are there — it is one gate item, not two, so a
+       first name on its own is a half-answer and reads as one. */
+    var firstEl = fld('firstname'), lastEl = fld('lastname');
+    var firstV = firstEl ? firstEl.value.trim() : '', lastV = lastEl ? lastEl.value.trim() : '';
+    var nameOK = firstV !== '' && lastV !== '';
+    document.getElementById('sum-name').textContent = [firstV, lastV].filter(Boolean).join(' ') || '—';
     var issuingEl = document.querySelector('[data-sel="issuing"]');
     var issuingSet = state.issuingSet && issuingEl.classList.contains('filled');
     document.getElementById('sum-issuing').textContent = issuingSet ? optLabel('issuing', issuingEl.dataset.value) : '—';
@@ -21366,6 +21389,7 @@
     document.getElementById('sum-sex').textContent = sexOn ? t('sex.' + sexOn.dataset.val) : '—';
     syncCategoryRow();
     syncPriorityRow();
+    sumPheno();   // the phenotype count is a counted row now, so the gate owns its refresh
     /* each counted summary row ticks (ink) iff its field is satisfied; the count is
        how many of those same rows are ticked. Case type isn't counted — it's derived
        (a badge on Analysis); category has a default; affected status is inferred. */
@@ -21374,11 +21398,15 @@
       ['sum-proband',   idInput.value.trim() !== '' && !lookupBlocked()],
       ['sum-issuing',   issuingSet],
       ['sum-sex',       !!sexOn],
-      ['sum-dob',       dobInput.value.trim() !== '']
+      ['sum-dob',       dobInput.value.trim() !== ''],
+      ['sum-name',      nameOK],
+      /* section 3 asks for at least one OBSERVED phenotype and always has; a not-observed
+         term is an aside and satisfies nothing */
+      ['sum-pheno',     pheno.observed.length > 0]
     ];
     rows.forEach(function(r){ document.getElementById(r[0]).classList.toggle('done', r[1]); });
     var total = rows.length, done = rows.filter(function(r){ return r[1]; }).length;
-    /* prenatal adds two required fields (fetal sex + gestational age) to the gate: 5 -> 7 */
+    /* prenatal adds two required fields (fetal sex + gestational age) to the gate: 7 -> 9 */
     var pr = prenatalReqs();
     if(pr){ total += 2; if(pr.fetalOK) done++; if(pr.gestOK) done++; }
     document.getElementById('req-count').textContent = t('reqCount', { done:done, total:total });
@@ -21429,8 +21457,10 @@
     });
   }
   /* a relative only reported as family history needs nothing beyond the top line; one ticked
-     into the analysis becomes a Patient, so it needs a real identifier, patient organization
-     and date of birth. Everything else is the core gate. */
+     into the analysis becomes a Patient, so it needs a real identifier, patient organization,
+     date of birth and — since 2026-09-16 — a first and last name. Everything else is the core
+     gate. The two names are checked separately here, unlike the rail's single counted row:
+     the rail counts rows, this marks fields, and a field is either filled or it is not. */
   function validateConditionals(){
     var problems = [];
     famList.querySelectorAll('.frow').forEach(function(row){
@@ -21448,6 +21478,10 @@
       else clearFieldError(org);
       if(dob && dob.value.trim() === ''){ setFieldError(dob, t('err.required')); problems.push(dob); }
       else clearFieldError(dob);
+      [row.querySelector('[data-fam-seq-first]'), row.querySelector('[data-fam-seq-last]')].forEach(function(n){
+        if(n && n.value.trim() === ''){ setFieldError(n, t('err.required')); problems.push(n); }
+        else clearFieldError(n);
+      });
     });
     return problems;
   }
@@ -21508,8 +21542,8 @@
     syncFamilyOrg();
     refreshChevrons();
     document.querySelectorAll('#langsw button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lang') === lang); });
-    sumPheno(); sumFamily();
-    recompute();
+    sumFamily();
+    recompute();   // repaints the phenotype count too
   }
   document.querySelectorAll('#langsw button').forEach(function(b){
     b.addEventListener('click', function(){
