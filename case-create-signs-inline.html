@@ -544,13 +544,11 @@
               <label><span data-i18n="lbl.sex">Sex</span> <span class="req">*</span> <span class="key">(sex_code)</span></label>
               <div class="seg" data-seg="sex"><span data-val="M" data-i18n="sex.M">Male</span><span data-val="F" data-i18n="sex.F">Female</span><span data-val="U" data-i18n="sex.U">Unknown</span></div>
             </div>
-            <!-- life status is back (it was pulled on 2026-09-08, restored here beside Sex) -->
-            <div class="f">
-              <label><span data-i18n="lbl.life">Life status</span> <span class="req">*</span> <span class="key">(life_status_code)</span></label>
-              <div class="seg" data-seg="life"><span class="on" data-val="Alive" data-i18n="life.Alive">Alive</span><span data-val="Deceased" data-i18n="life.Deceased">Deceased</span><span data-val="Unknown" data-i18n="life.Unknown">Unknown</span></div>
-            </div>
-            <!-- names captured inline with the other demographics, but optional -->
-            <div class="f">
+            <!-- Statut vital was dropped on 2026-09-16 (team decision): at case creation it
+                 would always be Alive, and `life_status_code` becomes nullable in Radiant. Sex
+                 therefore sits alone on its row — the names stay a pair, which is why First name
+                 is forced back to column 1 rather than sliding up beside Sex. -->
+            <div class="f" style="grid-column-start:1">
               <label><span data-i18n="lbl.firstName">First name</span> <span class="key">(first_name)</span></label>
               <input class="ctrl" type="text" data-i18n-ph="ph.firstName" placeholder="First name (optional)" data-field="firstname">
             </div>
@@ -601,10 +599,11 @@
         <header><span class="n">3</span><h2 data-i18n="sec.clinical">Clinical signs</h2><span class="chev" data-i18n="ui.collapse">－ collapse</span></header>
         <div class="body">
           <!-- Affected status removed: the proband is always affected, so it's inferred and
-               set system-side (never shown). Life status now sits in Clinical context, below. -->
+               set system-side (never shown). -->
           <!-- clinical signs (HPO), inline: suggestions + selected sections live in the form;
                the "Browse HPO tree" and "Not-observed signs" buttons open the browser modal. -->
-          <!-- Same shape as the modal picker of version A, but inline: the ask, then whatever is
+          <!-- Same shape as version A's modal picker (deleted 2026-09-15; see git history), but
+               inline: the ask, then whatever is
                already picked, then the search row, then the analysis suggestions. A term chosen
                anywhere — suggestion, search or tree — rises above the search box and takes its
                onset dropdown with it (2026-09-08). -->
@@ -19683,7 +19682,7 @@
       'lbl.ordering':'Ordering site', 'lbl.physician':'Ordering physician', 'lbl.study':'Research study (consent obtained)',
       'lbl.issuing':'Patient organization', 'lbl.patientId':'Identifier', 'lbl.healthNo':'Health number',
       'lbl.firstName':'First name', 'lbl.lastName':'Last name', 'lbl.sex':'Sex', 'lbl.dob':'Date of birth',
-      'lbl.condition':'Primary indication (MONDO)', 'lbl.life':'Life status',
+      'lbl.condition':'Primary indication (MONDO)',
       'lbl.phenotypes':'Phenotypes',
       'lbl.obsPheno':'Observed phenotypes', 'lbl.addObs':'＋ add observed term',
       'lbl.negPheno':'Explicitly not observed', 'lbl.addNeg':'＋ add not-observed term',
@@ -19729,7 +19728,6 @@
       'err.unconfirmed':'Confirm the existing patient, or change the identifier',
       'ph.note':'Diagnostic hypothesis, results of paraclinical tests, or any other information relevant to the analysis of the case',
       'sex.M':'Male', 'sex.F':'Female', 'sex.U':'Unknown',
-      'life.Alive':'Alive', 'life.Deceased':'Deceased', 'life.Unknown':'Unknown',
       'yn.Yes':'Yes', 'yn.No':'No', 'yn.Unknown':'Unknown', 'abbr.sexU':'U',
       'aff.Affected':'Affected', 'aff.NotAffected':'Not affected', 'aff.Unknown':'Unknown',
       'abbr.affA':'A', 'abbr.affNA':'NA', 'abbr.affU':'U',
@@ -19787,7 +19785,7 @@
       'lbl.ordering':'Établissement prescripteur', 'lbl.physician':'Médecin prescripteur', 'lbl.study':'Étude de recherche (consentement obtenu)',
       'lbl.issuing':'Établissement du patient', 'lbl.patientId':'Identifiant', 'lbl.healthNo':'RAMQ',
       'lbl.firstName':'Prénom', 'lbl.lastName':'Nom', 'lbl.sex':'Sexe', 'lbl.dob':'Date de naissance',
-      'lbl.condition':'Indication principale (MONDO)', 'lbl.life':'Statut vital',
+      'lbl.condition':'Indication principale (MONDO)',
       'lbl.phenotypes':'Phénotypes',
       'lbl.obsPheno':'Phénotypes observés', 'lbl.addObs':'＋ ajouter un terme observé',
       'lbl.negPheno':'Explicitement non observés', 'lbl.addNeg':'＋ ajouter un terme non observé',
@@ -19833,7 +19831,6 @@
       'err.unconfirmed':'Confirmez le patient existant, ou changez l’identifiant',
       'ph.note':'Hypothèse diagnostique, résultat d’examens para-cliniques ou toute autre information pertinente pour l’analyse du cas',
       'sex.M':'Masculin', 'sex.F':'Féminin', 'sex.U':'Inconnu',
-      'life.Alive':'Vivant', 'life.Deceased':'Décédé', 'life.Unknown':'Inconnu',
       'yn.Yes':'Oui', 'yn.No':'Non', 'yn.Unknown':'Inconnue', 'abbr.sexU':'I',
       'aff.Affected':'Atteint', 'aff.NotAffected':'Non atteint', 'aff.Unknown':'Inconnu',
       'abbr.affA':'A', 'abbr.affNA':'NA', 'abbr.affU':'I',
@@ -21221,9 +21218,13 @@
     var prenatalOn = document.querySelector('[data-check="prenatal"]').classList.contains('on');
     var pSexOn = document.querySelector(prenatalOn ? '[data-seg="fetalsex"] .on' : '[data-seg="sex"] .on');
     var pSex = pSexOn ? pSexOn.dataset.val : 'U';
-    var pLifeOn = document.querySelector('[data-seg="life"] .on');
+    /* Statut vital left the form on 2026-09-16, so « Fœtus décédé » is the only death the form
+       still records — and it is the PROBAND's death, whatever field it is filed under. Standard
+       notation slashes a stillbirth, so the node is slashed. Prenatal only: a postnatal case now
+       has no death signal at all, and a relative never had one (a family card carries relation ·
+       sex · affected status, never a life status), so no other node can be slashed. */
     var proband = { relation:'Proband', sex:pSex, aff:'Affected', proband:true,
-                    deceased: !!(pLifeOn && pLifeOn.dataset.val==='Deceased') };
+                    deceased: !!(prenatalOn && gestState() && gestState().basis === 'demise') };
     var consangEl = document.querySelector('[data-seg="consang"] .on');
     var consangYes = consangEl && consangEl.dataset.val==='Yes';
 
@@ -21280,7 +21281,7 @@
       else g+='<path d="M '+x+' '+(y-H)+' L '+(x+H)+' '+y+' L '+x+' '+(y+H)+' L '+(x-H)+' '+y+' Z" fill="'+fill+'" stroke="'+stroke+'" stroke-width="1.5"/>';
       if(n.aff==='Unknown' && !n.unknown) g+='<text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="14" fill="#6b7280">?</text>';
       if(n.proband) g+='<line x1="'+(x-H-15)+'" y1="'+(y+H+15)+'" x2="'+(x-H-2)+'" y2="'+(y+H+2)+'" stroke="#1f2328" stroke-width="1.4" marker-end="url(#pa)"/>';
-      if(n.deceased) g+='<line x1="'+(x-H-5)+'" y1="'+(y+H+5)+'" x2="'+(x+H+5)+'" y2="'+(y-H-5)+'" stroke="#1f2328" stroke-width="1.4"/>';
+      if(n.deceased) g+='<line x1="'+(x-H-5)+'" y1="'+(y+H+5)+'" x2="'+(x+H+5)+'" y2="'+(y-H-5)+'" stroke="'+(filled ? '#fff' : '#1f2328')+'" stroke-width="1.6"/>';
       if(n.relation) g+='<text x="'+x+'" y="'+(y+H+LBL)+'" text-anchor="middle" font-size="10" fill="#6b7280">'+(n.proband?t('ped.proband'):relLabel(n.relation))+'</text>';
       return g;
     }

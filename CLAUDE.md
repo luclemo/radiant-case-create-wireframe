@@ -1,8 +1,7 @@
 # CLAUDE.md
 
 Notes for whoever (human or Claude) picks this repo up next — including on a different machine.
-Last brought up to date: **2026-09-15**, when Lucas retired version A and reworked prenatal
-mode. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
+Last brought up to date: **2026-09-16**, when Statut vital left the form. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
 not been re-verified since.
 
 ## What this repo is
@@ -143,7 +142,8 @@ is no separate checkbox; Médecin prescripteur | Établissement prescripteur.
 Sexe is also prefilled Féminin: in a prenatal case **the proband is the fetus**, and this section
 holds the *mother's* identity only because a fetus has no Patient record of its own. Everything
 in it is hers; the fetus's own facts are the prenatal block at the end. Identifiant\* | Établissement du patient\*, then the lookup status
-line spanning the row, then RAMQ | Date de naissance\*, Sexe\* | Statut vital\*, Prénom | Nom. The
+line spanning the row, then RAMQ | Date de naissance\*, Sexe\* alone on its row, Prénom | Nom
+(First name is forced back to column 1 so the two names stay a pair). The
 prenatal-only block — headed **« Informations fœtales »**, matching the rail's block — opens at
 the **end of this section**, driven by the checkbox in section 1: Sexe (fœtus), then Âge
 gestationnel as DDM / DPA / Fœtus décédé. **The date sits directly under the option that asks
@@ -373,6 +373,22 @@ room; it is not clipped.
   which the implied age is negative, and has **no floor**: an overdue pregnancy has a due date
   behind it. A typed out-of-range date shows no age, leaves the rail row muted, fails the gate
   and marks the field (`err.gestPast` / `err.gestSoon`) rather than blocking Create in silence.
+- **Statut vital left the form** (2026-09-16, team decision). At case creation the value would
+  always be Alive — a case is not opened on a patient nobody intends to sequence — so the field
+  asked a question with one answer. **Radiant is making `life_status_code` nullable** to match;
+  until that ships, the column is `NOT NULL` on `public.patient`, so something has to supply it
+  server-side. It is a **patient-level** value, shared by every case that patient appears in —
+  only `family` holds per-case values (relationship, affected status) — which is part of why the
+  form is the wrong place to set it. A fetal demise is unaffected: it lives in « Âge
+  gestationnel » as « Fœtus décédé », which describes the pregnancy, not a person.
+- **The pedigree slashes the proband on a fetal demise** (2026-09-16). The flag used to read
+  section 2's Statut vital; « Fœtus décédé » is now the only death the form records, and it is
+  the *proband's* death whatever field it is filed under — standard notation slashes a
+  stillbirth. **Prenatal only**: a postnatal case records no death at all, and a relative never
+  could (a family card carries relation · sex · affected status, never a life status).
+  The slash is drawn **white on a filled symbol** — the proband is hardcoded `aff:'Affected'`,
+  so a `#1f2328` slash on a `#1f2328` fill was invisible. Position assertions found it and
+  passed; only the screenshot showed it was not there. Colour needs the screenshot.
 - **User text is never concatenated into `innerHTML`.** There is no escaping helper in this file;
   mixed content is built from `createTextNode` / `createElement` (`markMatch`, `renderChips`,
   `paintProbandRef`). An identifier is free text, so this matters.
