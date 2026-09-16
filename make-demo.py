@@ -9,12 +9,13 @@ a hand-copied demo would go the same way. Edit `case-create-signs-inline.html`,
 re-run this, commit both.
 
 What it changes, and nothing else:
-  1. drops the topbar (breadcrumb, title, internal version tag) for a slim strip
-     holding only the language switcher and an ⓘ Tips button;
-  2. keeps the « Field codes » toggle in the DOM but hidden — the reviewer
-     annotations are internal, and its wiring expects the element to exist;
-  3. adds the tips sheet, its keys in both languages, and the JS that opens it;
-  4. retitles the page for people who are not on the team.
+  1. retitles the page and adds noindex;
+  2. drops the topbar (breadcrumb, title, internal version tag) for a slim strip
+     holding only the language switcher and the tips toggle;
+  3. keeps the « Codes » toggle in the DOM but hidden — the reviewer annotations
+     are internal, and its wiring expects the element to exist;
+  4. adds the tips panel above the form, its keys in both languages, and the JS
+     that toggles it.
 
 Every replace is guarded: if the master's shape changes, this fails loudly
 rather than emitting a half-transformed demo.
@@ -46,7 +47,7 @@ rep('<title>Create case — Version B (inline signs)</title>',
     '<meta name="robots" content="noindex, nofollow">\n'
     '<title>Radiant — Créer un cas (maquette)</title>')
 
-# ------------------------------------------------- 2 · topbar -> slim strip
+# --------------------------------------------------- 2 · topbar -> slim strip
 rep("""  <div class="topbar">
     <div>
       <div class="crumb"><b>Radiant</b> › <b data-i18n="crumb.new">Create case</b></div>
@@ -62,9 +63,9 @@ rep("""  <div class="topbar">
   </div>""",
     """  <!-- DEMO BUILD. The topbar is gone: breadcrumb, page title and the internal version
        tag are all team-facing. What is left is what a visitor needs — the language and a
-       way in. Right-aligned so the form still starts at the top-left of the page. -->
+       way into the tips. Right-aligned so the form still starts at the top-left. -->
   <div class="demobar">
-    <div class="langsw"><button type="button" id="tips-btn" data-i18n="ui.tips">ⓘ Tips</button></div>
+    <div class="langsw"><button type="button" id="tips-btn" aria-expanded="false" aria-controls="tips-panel" data-i18n="ui.tips">ⓘ Instructions</button></div>
     <div class="langsw" id="langsw" role="group" aria-label="Language">
       <button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button>
     </div>
@@ -74,29 +75,38 @@ rep("""  <div class="topbar">
     <div hidden><button type="button" id="docs-toggle" data-i18n="ui.docsToggle">Field codes</button></div>
   </div>""")
 
+# ------------------------------------------------------------------ 3 · CSS
 rep("""  .topbar h1{font-size:16px;margin:2px 0 0}""",
     """  .topbar h1{font-size:16px;margin:2px 0 0}
   /* demo build: the topbar's replacement — controls only, no card around them */
-  .demobar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:16px}""")
-
-# ------------------------------------------------------------ 3 · tips sheet
-rep("""  .modal .instr{font-size:12px;color:var(--mut);margin:0 0 12px}""",
-    """  /* demo build: the ⓘ sheet. One line per tip — these are busy people. */
-  .tipsmodal{max-width:560px}
+  .demobar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:16px}
+  /* demo build: the tips panel. It sits ABOVE the form and inside the form column, so it
+     stays readable while the form is used — it is a disclosure, not a dialog, and it never
+     covers a field. The accent rule on the left marks it as an aside: without it, a white
+     card above section 1 reads as a sixth section of the form. */
+  .tipspanel{background:#fff;border:1px solid var(--line);border-left:3px solid var(--accent);
+        border-radius:var(--radius);padding:12px 16px 14px;margin-bottom:20px}
+  .tipspanel[hidden]{display:none}
+  .tipshead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+  .tipshead .tipscap{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)}
+  /* one line per tip — these are busy people */
   .tips{margin:0;padding:0 0 0 18px;font-size:12.5px;line-height:1.6;color:var(--mut)}
-  .tips li{margin-bottom:10px}
+  .tips li{margin-bottom:7px}
   .tips li:last-child{margin-bottom:0}
-  .tips b{color:var(--ink)}
-  .modal .instr{font-size:12px;color:var(--mut);margin:0 0 12px}""")
+  .tips b{color:var(--ink)}""")
 
-TIPS_MARKUP = """  <!-- demo build: « à savoir » sheet, opened from the ⓘ button in the top strip -->
-  <div id="tips-modal" class="modal-overlay" hidden>
-    <div class="modal tipsmodal" role="dialog" aria-modal="true" aria-labelledby="tips-title">
-      <header>
-        <h2 id="tips-title" data-i18n="tips.title">Good to know</h2>
-        <span class="mclose" id="tips-x" data-i18n-title="tips.close" title="Close">✕</span>
-      </header>
-      <div class="mbody">
+# --------------------------------------------------- 4 · the panel, above §1
+# Ordered the way the form is: section 1's fields, then 2, then 3 top to bottom
+# (the ask, the search, the suggestions), then 5. A reader working down the form
+# meets each tip at the point they need it.
+TIPS_PANEL = """      <!-- demo build: tips, as an expandable panel rather than a modal — they have to stay
+           visible while the form is filled in. Ordered to match the form, top to bottom:
+           section 1, then 2, then 3's own internal order, then 5. -->
+      <div id="tips-panel" class="tipspanel" hidden>
+        <div class="tipshead">
+          <span class="tipscap" data-i18n="tips.title">Instructions</span>
+          <span class="mclose" id="tips-x" data-i18n-title="tips.close" title="Close">✕</span>
+        </div>
         <ul class="tips">
           <li data-i18n-html="tips.1"></li>
           <li data-i18n-html="tips.2"></li>
@@ -105,58 +115,57 @@ TIPS_MARKUP = """  <!-- demo build: « à savoir » sheet, opened from the ⓘ b
           <li data-i18n-html="tips.5"></li>
           <li data-i18n-html="tips.6"></li>
           <li data-i18n-html="tips.7"></li>
-          <li data-i18n-html="tips.8"></li>
         </ul>
       </div>
-      <div class="mfoot">
-        <div class="cta ghost" id="tips-close" data-i18n="tips.close">Close</div>
-      </div>
-    </div>
-  </div>
 
 """
-rep("""  <div id="mondo-modal" class="modal-overlay tree-layer" hidden>""",
-    TIPS_MARKUP + """  <div id="mondo-modal" class="modal-overlay tree-layer" hidden>""")
+rep("""    <!-- LEFT: the form -->
+    <div>
 
-# ------------------------------------------------------------------ 4 · i18n
+      <!-- 1. Order & analysis (required) -->""",
+    """    <!-- LEFT: the form -->
+    <div>
+
+""" + TIPS_PANEL + """      <!-- 1. Order & analysis (required) -->""")
+
+# ------------------------------------------------------------------ 5 · i18n
 rep("""      'ui.docsToggle':'Field codes',""",
-    """      'ui.docsToggle':'Field codes', 'ui.tips':'ⓘ Tips',
-      'tips.title':'Good to know', 'tips.close':'Close',
-      'tips.1':'<b>Nothing is saved.</b> “Create case” just shows a message.',
-      'tips.2':'<b>Patient lookup:</b> <b>1234</b> + CHU Sainte-Justine, the only record in the mock.',
-      'tips.3':'<b>Prenatal case:</b> tick it in section 1 — section 2 then describes the mother.',
+    """      'ui.docsToggle':'Field codes', 'ui.tips':'ⓘ Instructions',
+      'tips.title':'Instructions', 'tips.close':'Close',
+      'tips.1':'<b>Analysis menu:</b> filter by word or act number.',
+      'tips.2':'<b>Prenatal case:</b> tick it in section 1 — the identifier in section 2 becomes the mother’s.',
+      'tips.3':'<b>Patient lookup:</b> <b>1234</b> + CHU Sainte-Justine, the only record in the mock.',
       'tips.4':'<b>Clinical signs:</b> at least one observed phenotype is required.',
-      'tips.5':'<b>Family:</b> tick a member into the analysis — the pedigree and badge follow.',
-      'tips.6':'<b>Analysis menu:</b> filter by word or act number, matched anywhere in the name.',
-      'tips.7':'<b>HPO search follows the language</b> — an English term finds nothing in French.',
-      'tips.8':'<b>FR / EN</b> switches the interface and keeps what you have entered.',""")
+      'tips.5':'<b>HPO search follows the language</b> — an English term finds nothing in French.',
+      'tips.6':'<b>Suggested phenotypes:</b> pick the <b>RGDI</b> analysis to see a list.',
+      'tips.7':'<b>Family:</b> add a member for family history and/or for the analysis — a pedigree is drawn in both cases.',""")
 
 rep("""      'ui.docsToggle':'Codes',""",
-    """      'ui.docsToggle':'Codes', 'ui.tips':'ⓘ Astuces',
-      'tips.title':'À savoir', 'tips.close':'Fermer',
-      'tips.1':'<b>Rien n’est enregistré.</b> « Créer le cas » affiche un message, rien de plus.',
-      'tips.2':'<b>Recherche de patient :</b> <b>1234</b> + CHU Sainte-Justine, le seul dossier existant.',
-      'tips.3':'<b>Cas prénatal :</b> cochez-le à la section 1 — la section 2 décrit alors la mère.',
+    """      'ui.docsToggle':'Codes', 'ui.tips':'ⓘ Instructions',
+      'tips.title':'Instructions', 'tips.close':'Fermer',
+      'tips.1':'<b>Menu Analyse :</b> filtrez par mot ou numéro d’acte.',
+      'tips.2':'<b>Cas prénatal :</b> cochez-le à la section 1 — l’identifiant de la section 2 devient celui de la mère.',
+      'tips.3':'<b>Recherche de patient :</b> <b>1234</b> + CHU Sainte-Justine, le seul dossier existant.',
       'tips.4':'<b>Signes cliniques :</b> au moins un phénotype observé est requis.',
-      'tips.5':'<b>Famille :</b> cochez un membre dans l’analyse — le pedigree et le badge suivent.',
-      'tips.6':'<b>Menu Analyse :</b> filtrez par mot ou numéro d’acte, n’importe où dans le nom.',
-      'tips.7':'<b>La recherche HPO suit la langue</b> — un terme anglais ne donne rien en français.',
-      'tips.8':'<b>FR / EN</b> change l’interface et conserve ce que vous avez saisi.',""")
+      'tips.5':'<b>La recherche HPO suit la langue</b> — un terme anglais ne donne rien en français.',
+      'tips.6':'<b>Phénotypes suggérés :</b> choisissez l’analyse <b>RGDI</b> pour en voir une liste.',
+      'tips.7':'<b>Famille :</b> ajoutez un membre pour les antécédents familiaux et/ou pour l’analyse — dans les deux cas, un pedigree est tracé.',""")
 
-# -------------------------------------------------------------------- 5 · JS
+# -------------------------------------------------------------------- 6 · JS
 rep("""  /* ---------- init ---------- */""",
-    """  /* demo build: the ⓘ sheet. Same open/close vocabulary as the other modals —
-     ✕, a Close button, a backdrop click and Esc, none of which change any data. */
+    """  /* demo build: the tips panel is a disclosure, not a dialog — it does not trap focus, has
+     no backdrop, and Esc is left alone (Esc belongs to the real modals, and closing this
+     panel with it would be a surprise while the HPO tree is open). The button carries the
+     open state, so it reads as pressed while the panel shows. */
   (function(){
-    var m = document.getElementById('tips-modal');
-    function shut(){ m.setAttribute('hidden',''); }
-    document.getElementById('tips-btn').addEventListener('click', function(){ m.removeAttribute('hidden'); });
-    document.getElementById('tips-x').addEventListener('click', shut);
-    document.getElementById('tips-close').addEventListener('click', shut);
-    m.addEventListener('click', function(e){ if(e.target === m) shut(); });
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape' && !m.hasAttribute('hidden')) shut();
-    });
+    var p = document.getElementById('tips-panel'), b = document.getElementById('tips-btn');
+    function set(open){
+      p.toggleAttribute('hidden', !open);
+      b.classList.toggle('on', open);
+      b.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    b.addEventListener('click', function(){ set(p.hasAttribute('hidden')); });
+    document.getElementById('tips-x').addEventListener('click', function(){ set(false); });
   })();
 
   /* ---------- init ---------- */""")

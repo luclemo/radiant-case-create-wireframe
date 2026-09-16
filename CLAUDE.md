@@ -35,10 +35,25 @@ Every replace in it is guarded, so it fails loudly if the master changes shape r
 emitting a half-transformed page.
 
 What the demo changes, and nothing else: the topbar goes (breadcrumb, page title, internal
-version tag) for a slim right-aligned strip holding the language switcher and an **ⓘ Astuces**
-button; the « Codes » toggle stays in the DOM but hidden, so the reviewer annotations have no way
-in and its wiring still finds the element; an eight-line tips sheet is added in both languages;
-the page is retitled and carries `noindex`. It is served by **GitHub Pages from `main` / `/docs`**.
+version tag) for a slim right-aligned strip holding the language switcher and an
+**ⓘ Instructions** button; the « Codes » toggle stays in the DOM but hidden, so the reviewer
+annotations have no way in and its wiring still finds the element; a seven-line instructions
+panel is added in both languages; the page is retitled and carries `noindex`. It is served by
+**GitHub Pages from `main` / `/docs`**.
+
+The instructions are a **panel, not a modal** (2026-09-16, Lucas): they have to stay readable
+while the form is being filled in, so the block expands *above section 1, inside the form
+column* — it never covers a field and the rail does not move. It is a disclosure, so it traps
+no focus, has no backdrop, and **Esc is deliberately left alone**: Esc belongs to the real
+modals, and closing this while the HPO tree is open would be a surprise. The button carries the
+open state (`.langsw button.on` plus `aria-expanded`).
+
+The lines are **ordered the way the form is read**, top to bottom — §1's analysis menu, §1's
+prenatal checkbox, §2's lookup, then §3 in its own internal order (the ask, the search, the
+suggestions), then §5. « Instructions » is the same word in French and English, so `ui.tips`
+and `tips.title` carry one string in both dictionaries. The suggestions line names **RGDI**,
+which is the real catalog code — `RDGI` does not exist. Every analysis except RAPIDE and GENOR
+shows the same placeholder list, so RGDI is a good demo pick rather than a special case.
 
 Run the suites against it — that is how the transform is proved behaviour-neutral:
 
