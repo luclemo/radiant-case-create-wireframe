@@ -19692,7 +19692,7 @@
       'ui.collapse':'－ collapse', 'ui.expand':'＋ expand',
       'ui.docsToggle':'Field codes',
       'ui.removeSign':'Remove', 'ui.clearSearch':'Clear the search', 'ui.removeRow':'Remove this row',
-      'sec.analysis':'Analysis', 'sec.proband':'Patient (proband)', 'sec.probandPrenatal':'Patient (proband, mother)', 'sec.clinical':'Clinical signs', 'sec.otherClinical':'Other clinical information (optional)', 'sec.family':'Family analysis',
+      'sec.analysis':'Analysis', 'sec.proband':'Patient (proband)', 'sec.probandPrenatal':'Patient (proband, mother)', 'sec.clinical':'Clinical signs', 'sec.otherClinical':'Other clinical information (optional)', 'sec.family':'Family',
       'lbl.analysis':'Analysis', 'lbl.prenatal':'Prenatal case', 'lbl.priority':'Priority',
       'lbl.prenatalInfo':'Fetal information',
       'lbl.fetalSex':'Fetal sex', 'fsex.F':'Female', 'fsex.M':'Male', 'fsex.U':'Undetermined',
@@ -19736,7 +19736,7 @@
       'ph.select':'Select…', 'ph.analysis':'Select an analysis…',
       'ph.selProject':'Select a study…', 'ph.selOrdering':'Select a site…',
       'ph.selIssuing':'Select an organization…', 'ph.selAncestry':'Select ethnicities…',
-      'ph.selRelation':'Select a relationship…',
+      'ph.selRelation':'Select…',
       'ph.idValue':'MRN, Study code, etc…', 'ph.physician':'Who is requesting this analysis',
       'ph.firstName':'First name', 'ph.lastName':'Last name',
       'ph.jhn':'RAMQ (QC) or regional JHN', 'ph.dob':'YYYY-MM-DD',
@@ -19757,7 +19757,7 @@
       'type.Germline':'Germline', 'type.Somatic':'Somatic',
       'rail.summary':'Case summary', 'rail.analysis':'Analysis', 'rail.category':'Category', 'rail.probandId':'Proband ID',
       'rail.issuing':'Patient organization', 'rail.sex':'Sex', 'rail.dob':'Date of birth', 'rail.optAdditions':'Optional additions',
-      'rail.motherId':'Mother ID', 'rail.name':'Name', 'rail.fetal':'Fetal information', 'rail.fetalSex':'Fetal sex', 'rail.gestAge':'Gestational age',
+      'rail.motherId':'Mother ID', 'rail.name':'Name', 'rail.sexMother':'Sex (mother)', 'rail.fetal':'Fetal information', 'rail.fetalSex':'Fetal sex', 'rail.gestAge':'Gestational age',
       'gestAbbr.LMP':'LMP', 'gestAbbr.EDD':'EDD',
       'rail.condition':'Primary indication', 'rail.pheno':'Phenotypes', 'rail.consang':'Consanguinity', 'rail.ancestry':'Ethnicities',
       'rail.note':'Clinical note', 'rail.family':'Family', 'rail.create':'Create case', 'rail.draft':'Save draft',
@@ -19795,7 +19795,7 @@
       'ui.collapse':'－ réduire', 'ui.expand':'＋ développer',
       'ui.docsToggle':'Codes',
       'ui.removeSign':'Retirer', 'ui.clearSearch':'Effacer la recherche', 'ui.removeRow':'Retirer cette ligne',
-      'sec.analysis':'Analyse', 'sec.proband':'Patient (cas index)', 'sec.probandPrenatal':'Patient (cas index, mère)', 'sec.clinical':'Signes cliniques', 'sec.otherClinical':'Autres informations cliniques (facultatives)', 'sec.family':'Analyse familiale',
+      'sec.analysis':'Analyse', 'sec.proband':'Patient (cas index)', 'sec.probandPrenatal':'Patient (cas index, mère)', 'sec.clinical':'Signes cliniques', 'sec.otherClinical':'Autres informations cliniques (facultatives)', 'sec.family':'Famille',
       'lbl.analysis':'Analyse', 'lbl.prenatal':'Cas prénatal', 'lbl.priority':'Priorité',
       'lbl.prenatalInfo':'Informations fœtales',
       'lbl.fetalSex':'Sexe (fœtus)', 'fsex.F':'Féminin', 'fsex.M':'Masculin', 'fsex.U':'Indéterminé',
@@ -19839,7 +19839,7 @@
       'ph.select':'Sélectionner…', 'ph.analysis':'Sélectionner une analyse…',
       'ph.selProject':'Sélectionner une étude…', 'ph.selOrdering':'Sélectionner un établissement…',
       'ph.selIssuing':'Sélectionner un établissement…', 'ph.selAncestry':'Sélectionner des ethnicités…',
-      'ph.selRelation':'Sélectionner un lien de parenté…',
+      'ph.selRelation':'Sélectionner…',
       'ph.idValue':'MRN, code de l’étude, etc…', 'ph.physician':'Qui demande cette analyse',
       'ph.firstName':'Prénom', 'ph.lastName':'Nom',
       'ph.jhn':'RAMQ (QC) ou NAM régional', 'ph.dob':'AAAA-MM-JJ',
@@ -19860,7 +19860,7 @@
       'type.Germline':'Germinal', 'type.Somatic':'Somatique',
       'rail.summary':'Résumé du cas', 'rail.analysis':'Analyse', 'rail.category':'Catégorie', 'rail.probandId':'ID cas index',
       'rail.issuing':'Établissement du patient', 'rail.sex':'Sexe', 'rail.dob':'Date de naissance', 'rail.optAdditions':'Ajouts facultatifs',
-      'rail.motherId':'ID mère', 'rail.name':'Nom', 'rail.fetal':'Informations fœtales', 'rail.fetalSex':'Sexe fœtal', 'rail.gestAge':'Âge gestationnel',
+      'rail.motherId':'ID mère', 'rail.name':'Nom', 'rail.sexMother':'Sexe (mère)', 'rail.fetal':'Informations fœtales', 'rail.fetalSex':'Sexe fœtal', 'rail.gestAge':'Âge gestationnel',
       'gestAbbr.LMP':'DDM', 'gestAbbr.EDD':'DPA',
       'rail.condition':'Indication principale', 'rail.pheno':'Phénotypes', 'rail.consang':'Consanguinité', 'rail.ancestry':'Ethnicité(s)',
       'rail.note':'Note clinique', 'rail.family':'Famille', 'rail.create':'Créer le cas', 'rail.draft':'Enregistrer le brouillon',
@@ -20331,11 +20331,17 @@
      Section 2 describes the mother, so « ID cas index » is a lie there — the identifier is hers.
      The label swaps between two i18n keys the way section 2's own title does, so a language
      switch repaints it by itself. The fetus's two required facts then get their own block. */
-  function syncProbandIdLabel(on){
-    var k = document.querySelector('[data-i18n="rail.probandId"], [data-i18n="rail.motherId"]');
+  function swapKey(sel, on, onKey, offKey){
+    var k = document.querySelector(sel);
     if(!k) return;
-    k.setAttribute('data-i18n', on ? 'rail.motherId' : 'rail.probandId');
+    k.setAttribute('data-i18n', on ? onKey : offKey);
     k.textContent = t(k.getAttribute('data-i18n'));
+  }
+  function syncProbandIdLabel(on){
+    swapKey('[data-i18n="rail.probandId"], [data-i18n="rail.motherId"]', on, 'rail.motherId', 'rail.probandId');
+    /* Sexe is hers too, and prenatal prefills it Féminin — so unqualified it reads like the
+       fetus's sex sitting one block above « Sexe fœtal ». Same two-key swap (2026-09-16). */
+    swapKey('[data-i18n="rail.sex"], [data-i18n="rail.sexMother"]', on, 'rail.sexMother', 'rail.sex');
   }
   /* ---------- gestational age ----------
      CLIN already ships this (clin-portal-ui: `HybridPatientFoetus` holds `gestational_method`
@@ -20434,11 +20440,17 @@
   }
 
   /* ---------- segmented controls ---------- */
+  /* Consanguinité is the ONE segment you can clear by clicking the selected option again: it is
+     optional, and « Inconnu » is a claim (nobody knows) rather than the absence of one. Every
+     other segment here is required — Sexe, and section 5's own — so making them all toggleable
+     would let the user un-answer a required field with a stray click (2026-09-16). */
   document.querySelectorAll('.seg[data-seg]').forEach(function(seg){
+    var clearable = seg.getAttribute('data-seg') === 'consang';
     seg.addEventListener('click', function(e){
       var span = e.target.closest('span'); if(!span || span.classList.contains('dim')) return;
+      var off = clearable && span.classList.contains('on');
       Array.prototype.forEach.call(seg.children, function(s){ s.classList.remove('on'); });
-      span.classList.add('on');
+      if(!off) span.classList.add('on');   // cleared: the rail falls back to its muted em-dash
       recompute();
     });
   });
@@ -21043,7 +21055,7 @@
          free text gets the width left over (2026-09-10) */
       '<div class="famtop">' +
         '<div class="f"><label><span data-i18n="lbl.relation">Relationship</span> <span class="req">*</span> <span class="key">(relation_to_proband_code)</span></label>' +
-          '<div class="ctrl select" tabindex="0" data-fam="relation" data-i18n-ph="ph.selRelation">Select a relationship…</div></div>' +
+          '<div class="ctrl select" tabindex="0" data-fam="relation" data-i18n-ph="ph.selRelation">Select…</div></div>' +
         '<div class="f"><label><span data-i18n="lbl.sex">Sex</span> <span class="req">*</span> <span class="key">(sex_code)</span></label>' +
           '<div class="seg" data-fam-seg="sex"><span data-val="M" data-i18n-title="sex.M">M</span><span data-val="F" data-i18n-title="sex.F">F</span><span data-val="U" data-i18n="abbr.sexU" data-i18n-title="sex.U">U</span></div></div>' +
         '<div class="f"><label><span data-i18n="lbl.affected">Affected status</span> <span class="req">*</span> <span class="key">(affected_status_code)</span></label>' +

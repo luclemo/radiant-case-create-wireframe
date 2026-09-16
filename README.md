@@ -16,7 +16,7 @@ One other file sits beside it, not the current design:
 ## The form
 
 Five sections — **Analyse · Patient (cas index) · Signes cliniques · Autres informations
-cliniques · Analyse familiale** — plus a summary rail tracking the seven required fields (nine
+cliniques · Famille** — plus a summary rail tracking the seven required fields (nine
 in a prenatal case).
 
 - **Analysis menu** — the real 37-analysis catalog (`analysis_catalog_qlin.csv`), searchable.
@@ -43,7 +43,7 @@ in a prenatal case).
 - **A prenatal case is solo by default.** Section 5 stays empty until you add someone; the mother
   is then an ordinary relative of the fetus, and ticking her into the analysis states the patient
   record already captured in section 2 rather than asking for it twice.
-- **Analyse familiale owns both family roles** — one card per relative records the family history
+- **Famille owns both family roles** — one card per relative records the family history
   (lien de parenté · sexe · statut · préciser), and ticking « Inclure dans l'analyse génétique »
   opens the patient-identification fields, because a member in the analysis becomes a Patient in
   Radiant. The live **pedigree** is drawn in the summary rail, under the Famille row, from every

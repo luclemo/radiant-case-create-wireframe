@@ -2,7 +2,7 @@
 
 Notes for whoever (human or Claude) picks this repo up next — including on a different machine.
 Last brought up to date: **2026-09-16**, when first and last name and clinical signs joined
-the required gate. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
+the required gate, and the rail's prenatal labels and section 5's copy were sharpened. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
 not been re-verified since.
 
 ## What this repo is
@@ -172,7 +172,12 @@ sub-heading, **6 px** under one.
 chips); Indication principale (MONDO) typeahead + « Parcourir l'arbre MONDO »; Note clinique.
 Family history **left this section on 2026-09-10** — section 5 owns it now.
 
-**5 · Analyse familiale** — under the « Sections facultatives » divider. No opt-in checkbox: a
+**5 · Famille** — under the « Sections facultatives » divider. It was « Analyse familiale »
+until 2026-09-16; the section holds both reported family history and the members included in the
+analysis, and the old title named only the second half. « Famille » was chosen over the accurate
+but long « Antécédents et analyse familiale » (by far the longest of the five titles, and
+« familiale » attaching only to « analyse » invites a misparse as « antécédents familiaux ») —
+the standing description already carries the ask, and the rail's own « Famille » row now matches. No opt-in checkbox: a
 standing description carries the ask (« Rapportez des antécédents familiaux et incluez, le cas
 échéant, … »), so the section is always open. Then the member cards and the
 « ＋ Ajouter un membre de la famille » button **below** the list. The pedigree is not here —
@@ -210,7 +215,12 @@ count read as one more fetal fact.
 
 In prenatal mode (2026-09-15) « ID cas index » renames itself to « ID mère » — the identifier is
 hers — swapping between two i18n keys the way section 2's title does, so a language switch
-repaints it by itself. A **« Informations fœtales »** block (`#rail-fetal`, same `.optlabel`
+repaints it by itself. **« Sexe » becomes « Sexe (mère) » / "Sex (mother)" the same way**
+(2026-09-16, `rail.sex` ↔ `rail.sexMother`): that row is hers too, and prenatal prefills it
+Féminin, so unqualified it read like the fetus's sex sitting one block above « Sexe fœtal ».
+Both swaps go through the one `swapKey()` helper. « Date de naissance » and « Nom » are hers as
+well and are **not** qualified — the whole block is her identity and three parentheses in a row
+would be noise; the two that swap are the two that were actively misleading. A **« Informations fœtales »** block (`#rail-fetal`, same `.optlabel`
 treatment) then carries Sexe fœtal and Âge gestationnel. It sits **above** « Ajouts facultatifs »
 because both rows are required in a prenatal case (the gate goes 7 → 9), and disappears
 entirely otherwise. The
@@ -235,9 +245,17 @@ room; it is not clipped.
   picks, `opts.search:false` suppresses the filter box, `opts.selected()` re-reads the selection.
 - **Every dropdown is clearable** back to its placeholder through the `↺` row `withClear()`
   prepends whenever a control is `filled`.
-- **A placeholder names the thing it wants** (2026-09-10): « Sélectionner une étude… »,
-  « …un établissement… », « …des ethnicités… », « …un lien de parenté… » rather than a bare
-  « Sélectionner… », each on its own `ph.sel*` key. `ph.select` survives only as the fallback
+- **A placeholder names the thing it wants — unless the control is too narrow to show it**
+  (2026-09-10, narrowed 2026-09-16): « Sélectionner une étude… », « …un établissement… »,
+  « …des ethnicités… » rather than a bare « Sélectionner… », each on its own `ph.sel*` key.
+  **`ph.selRelation` is the one exception**: section 5 keeps the relationship field *as narrow
+  as its labels allow* so the free-text « Préciser » takes the width that is left, and
+  « Sélectionner un lien de parenté… » does not fit that width — it is now
+  « Sélectionner… » / "Select…". This is a width problem, not a change of mind, so the other
+  five were left alone; a placeholder you cannot read names nothing. The key stays
+  `ph.selRelation` rather than collapsing into `ph.select`: one key per control is what lets
+  this one change without moving the others, and it keeps `ph.select` a genuine fallback.
+  `ph.select` still survives only as the fallback
   `clearCtrl()` / `renderChips()` / `syncFamilyOrg()` reach for when a control declares none —
   no control in the form does any more. `localize()` copies a div-select's `data-i18n-ph` into
   `dataset.ph`, which is what makes clearing one restore *its* placeholder and not the generic
@@ -431,6 +449,13 @@ room; it is not clipped.
   "what does this case record" while the ink answers "is the requirement met". `sumPheno()`
   therefore sets the text only and `recompute()` owns the ink, so the two cannot drift; the three
   call sites that used to call `sumPheno()` on a phenotype change now call `recompute()`.
+
+- **Consanguinity is the one segment you can clear** (2026-09-16). Clicking the selected option
+  again unsets it, and the rail falls back to its muted em-dash. Deliberately special-cased on
+  `data-seg="consang"` rather than made general: every other `.seg` in the form is required —
+  Sexe, and section 5's own sex and affected-status segments — so a general toggle would let a
+  stray second click un-answer a required field. Consanguinity is optional, and « Inconnu » is a
+  claim (nobody knows) rather than the absence of one, so "no answer" needed a way back.
 
 - **User text is never concatenated into `innerHTML`.** There is no escaping helper in this file;
   mixed content is built from `createTextNode` / `createElement` (`markMatch`, `renderChips`,
