@@ -63,6 +63,15 @@ in a prenatal case).
   paths: confirming the patient, and rejecting to see Create block.
 - Add two family members and tick one into the analysis — that draws the pedigree in the rail.
 
+## The demo build
+
+`docs/index.html` is the version to share with users — same wireframe, no team-facing chrome:
+no breadcrumb or title, the language switcher kept (French by default), the field-code
+annotations unreachable, and an **ⓘ Astuces** button opening a one-line-per-tip sheet.
+
+It is **generated** by `python3 make-demo.py`, so it never drifts from the master. Edit
+`case-create-signs-inline.html`, re-run that, commit both.
+
 ## Still pending
 
 - **French HPO terms need clinical review** — largely machine-translated; some common terms fixed by hand.

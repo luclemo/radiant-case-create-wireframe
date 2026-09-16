@@ -25,6 +25,27 @@ from B. Git history and the `lucas-pre-vf` branch (`935ad60`) still have it.
 
 `case-create-essai.html` is Vincent's family-section trial, kept for comparison.
 
+**`docs/index.html` is the user-facing demo, and it is GENERATED — never hand-edit it.**
+`make-demo.py` builds it from the master; run `python3 make-demo.py` after any change to the
+wireframe and commit both. It is a build step, not a dependency: the output is still one
+self-contained file you can open in a browser, and the repo still has nothing to install.
+The generator exists because **this repo has already lost a wireframe to drift** — version A was
+deleted on 2026-09-15 after diverging from B — and a hand-copied demo would go the same way.
+Every replace in it is guarded, so it fails loudly if the master changes shape rather than
+emitting a half-transformed page.
+
+What the demo changes, and nothing else: the topbar goes (breadcrumb, page title, internal
+version tag) for a slim right-aligned strip holding the language switcher and an **ⓘ Astuces**
+button; the « Codes » toggle stays in the DOM but hidden, so the reviewer annotations have no way
+in and its wiring still finds the element; an eight-line tips sheet is added in both languages;
+the page is retitled and carries `noindex`. It is served by **GitHub Pages from `main` / `/docs`**.
+
+Run the suites against it — that is how the transform is proved behaviour-neutral:
+
+```bash
+TARGET=docs/index.html ./tests/run.sh
+```
+
 `README.md` is the demo-facing description (pros/cons, demo tips), rewritten on 2026-09-10 and
 current as of this session.
 
