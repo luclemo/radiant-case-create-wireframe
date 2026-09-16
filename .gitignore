@@ -1,2 +1,5 @@
 # Internal working notes — not for the team/PM demo repo
 NOTES-internal.md
+
+# Local headless test suites — kept out of the demo repo
+tests/
