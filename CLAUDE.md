@@ -142,8 +142,12 @@ is no separate checkbox; Médecin prescripteur | Établissement prescripteur.
 Sexe is also prefilled Féminin: in a prenatal case **the proband is the fetus**, and this section
 holds the *mother's* identity only because a fetus has no Patient record of its own. Everything
 in it is hers; the fetus's own facts are the prenatal block at the end. Identifiant\* | Établissement du patient\*, then the lookup status
-line spanning the row, then RAMQ | Date de naissance\*, Sexe\* alone on its row, Prénom | Nom
-(First name is forced back to column 1 so the two names stay a pair). The
+line spanning the row, then RAMQ | **DDN\* · Sexe\*** sharing one cell, then Prénom | Nom.
+The pair fits 368 px only because both halves shrink: the label to « DDN » / "DOB" (`lbl.dobShort`,
+§2 only — `lbl.dob` still spells it out in §5 and the patient dialog), and Sexe to **initials with
+the full word as tooltip**, the treatment §5's cards already use. Full Sexe labels need 393 px.
+The rail translates `dataset.value` rather than copying the button text, so it reads « Féminin »
+and not « F ». The
 prenatal-only block — headed **« Informations fœtales »**, matching the rail's block — opens at
 the **end of this section**, driven by the checkbox in section 1: Sexe (fœtus), then Âge
 gestationnel as DDM / DPA / Fœtus décédé. **The date sits directly under the option that asks

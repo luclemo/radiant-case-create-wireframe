@@ -74,6 +74,11 @@
   .famx{justify-self:end;align-self:end;font-size:14px;color:var(--faint);cursor:pointer;line-height:1;padding-bottom:9px}
   .famx:hover{color:var(--req)}
   .f{display:flex;flex-direction:column;gap:5px}
+  /* Date of birth and Sex share one grid cell: the date takes what is left so the pair's right
+     edge lines up with the column above it, and Sex keeps its natural width */
+  .dobsex{display:flex;gap:16px;align-items:end}
+  .dobsex > .f:first-child{flex:1;min-width:0}
+  .dobsex > .f:last-child{flex:0 0 auto}
   .f[hidden]{display:none}  /* .f's display:flex would otherwise override the [hidden] attribute */
   .f.full{grid-column:1/-1}
   .f label{font-size:12px;color:var(--ink);font-weight:500}
@@ -536,19 +541,23 @@
               <label><span data-i18n="lbl.healthNo">Health number</span> <span class="key">(jhn)</span><sup class="fn">6</sup></label>
               <input class="ctrl" type="text" data-i18n-ph="ph.jhn" placeholder="RAMQ (QC) or regional JHN" data-field="jhn">
             </div>
-            <div class="f">
-              <label><span data-i18n="lbl.dob">Date of birth</span> <span class="req">*</span> <span class="key">(date_of_birth)</span></label>
-              <input class="ctrl" type="date" data-i18n-ph="ph.dob" placeholder="YYYY-MM-DD" data-field="dob">
+            <!-- Date of birth and Sex share the cell Date of birth used to have on its own
+                 (2026-09-16). Two things had to give for them to fit its 368 px: the label
+                 shortens to DOB / DDN, and Sex shows initials with the full word as a tooltip —
+                 the treatment section 5's family cards already use. With full Sex labels the
+                 pair needs 393 px and does not fit. Statut vital left the form the same day, so
+                 with Sex no longer stranded on its own row the names pair up unaided. -->
+            <div class="dobsex">
+              <div class="f">
+                <label><span data-i18n="lbl.dobShort">DOB</span> <span class="req">*</span> <span class="key">(date_of_birth)</span></label>
+                <input class="ctrl" type="date" data-i18n-ph="ph.dob" placeholder="YYYY-MM-DD" data-field="dob">
+              </div>
+              <div class="f">
+                <label><span data-i18n="lbl.sex">Sex</span> <span class="req">*</span> <span class="key">(sex_code)</span></label>
+                <div class="seg" data-seg="sex"><span data-val="M" data-i18n-title="sex.M">M</span><span data-val="F" data-i18n-title="sex.F">F</span><span data-val="U" data-i18n="abbr.sexU" data-i18n-title="sex.U">U</span></div>
+              </div>
             </div>
             <div class="f">
-              <label><span data-i18n="lbl.sex">Sex</span> <span class="req">*</span> <span class="key">(sex_code)</span></label>
-              <div class="seg" data-seg="sex"><span data-val="M" data-i18n="sex.M">Male</span><span data-val="F" data-i18n="sex.F">Female</span><span data-val="U" data-i18n="sex.U">Unknown</span></div>
-            </div>
-            <!-- Statut vital was dropped on 2026-09-16 (team decision): at case creation it
-                 would always be Alive, and `life_status_code` becomes nullable in Radiant. Sex
-                 therefore sits alone on its row — the names stay a pair, which is why First name
-                 is forced back to column 1 rather than sliding up beside Sex. -->
-            <div class="f" style="grid-column-start:1">
               <label><span data-i18n="lbl.firstName">First name</span> <span class="key">(first_name)</span></label>
               <input class="ctrl" type="text" data-i18n-ph="ph.firstName" placeholder="First name (optional)" data-field="firstname">
             </div>
@@ -19682,7 +19691,7 @@
       'lbl.ordering':'Ordering site', 'lbl.physician':'Ordering physician', 'lbl.study':'Research study (consent obtained)',
       'lbl.issuing':'Patient organization', 'lbl.patientId':'Identifier', 'lbl.healthNo':'Health number',
       'lbl.firstName':'First name', 'lbl.lastName':'Last name', 'lbl.sex':'Sex', 'lbl.dob':'Date of birth',
-      'lbl.condition':'Primary indication (MONDO)',
+      'lbl.condition':'Primary indication (MONDO)', 'lbl.dobShort':'DOB',
       'lbl.phenotypes':'Phenotypes',
       'lbl.obsPheno':'Observed phenotypes', 'lbl.addObs':'＋ add observed term',
       'lbl.negPheno':'Explicitly not observed', 'lbl.addNeg':'＋ add not-observed term',
@@ -19785,7 +19794,7 @@
       'lbl.ordering':'Établissement prescripteur', 'lbl.physician':'Médecin prescripteur', 'lbl.study':'Étude de recherche (consentement obtenu)',
       'lbl.issuing':'Établissement du patient', 'lbl.patientId':'Identifiant', 'lbl.healthNo':'RAMQ',
       'lbl.firstName':'Prénom', 'lbl.lastName':'Nom', 'lbl.sex':'Sexe', 'lbl.dob':'Date de naissance',
-      'lbl.condition':'Indication principale (MONDO)',
+      'lbl.condition':'Indication principale (MONDO)', 'lbl.dobShort':'DDN',
       'lbl.phenotypes':'Phénotypes',
       'lbl.obsPheno':'Phénotypes observés', 'lbl.addObs':'＋ ajouter un terme observé',
       'lbl.negPheno':'Explicitement non observés', 'lbl.addNeg':'＋ ajouter un terme non observé',
@@ -21352,7 +21361,9 @@
     var issuingSet = state.issuingSet && issuingEl.classList.contains('filled');
     document.getElementById('sum-issuing').textContent = issuingSet ? optLabel('issuing', issuingEl.dataset.value) : '—';
     var sexOn = document.querySelector('[data-seg="sex"] .on');
-    document.getElementById('sum-sex').textContent = sexOn ? sexOn.textContent : '—';
+    /* the control shows initials now, so the rail translates the value rather than copying
+       the button's text — « F » in the form still reads « Féminin » in the summary */
+    document.getElementById('sum-sex').textContent = sexOn ? t('sex.' + sexOn.dataset.val) : '—';
     syncCategoryRow();
     syncPriorityRow();
     /* each counted summary row ticks (ink) iff its field is satisfied; the count is
