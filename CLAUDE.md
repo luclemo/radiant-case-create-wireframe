@@ -51,9 +51,14 @@ open state (`.langsw button.on` plus `aria-expanded`).
 The lines are **ordered the way the form is read**, top to bottom — §1's analysis menu, §1's
 prenatal checkbox, §2's lookup, then §3 in its own internal order (the ask, the search, the
 suggestions), then §5. « Instructions » is the same word in French and English, so `ui.tips`
-and `tips.title` carry one string in both dictionaries. The suggestions line names **RGDI**,
-which is the real catalog code — `RDGI` does not exist. Every analysis except RAPIDE and GENOR
-shows the same placeholder list, so RGDI is a good demo pick rather than a special case.
+and `tips.title` carry one string in both dictionaries.
+
+Six of the seven lines fit one line; the **lookup line is deliberately longer** (three in FR)
+because it names both halves of the key by their exact section 2 labels — « Identifiant » and
+« Établissement du patient » — and says a record opens to confirm. The **suggestions line names
+no analysis**: every analysis except RAPIDE and GENOR shows the same `SUGGESTIONS_DEFAULT` list,
+so pointing at one would imply a specificity the mock does not have. (If a code is ever needed
+there, it is **RGDI** — `RDGI` does not exist in the catalog.)
 
 Run the suites against it — that is how the transform is proved behaviour-neutral:
 

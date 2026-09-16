@@ -132,23 +132,23 @@ rep("""    <!-- LEFT: the form -->
 rep("""      'ui.docsToggle':'Field codes',""",
     """      'ui.docsToggle':'Field codes', 'ui.tips':'ⓘ Instructions',
       'tips.title':'Instructions', 'tips.close':'Close',
-      'tips.1':'<b>Analysis menu:</b> filter by word or act number.',
+      'tips.1':'<b>Analysis menu:</b> filter by name, code, or analysis number.',
       'tips.2':'<b>Prenatal case:</b> tick it in section 1 — the identifier in section 2 becomes the mother’s.',
-      'tips.3':'<b>Patient lookup:</b> <b>1234</b> + CHU Sainte-Justine, the only record in the mock.',
+      'tips.3':'<b>Patient lookup:</b> in section 2, type <b>1234</b> in “Identifier” and pick <b>CHU Sainte-Justine</b> in “Patient organization”. The search runs once both are set and opens a record to confirm; any other identifier gives “new patient”.',
       'tips.4':'<b>Clinical signs:</b> at least one observed phenotype is required.',
       'tips.5':'<b>HPO search follows the language</b> — an English term finds nothing in French.',
-      'tips.6':'<b>Suggested phenotypes:</b> pick the <b>RGDI</b> analysis to see a list.',
+      'tips.6':'<b>Suggested phenotypes:</b> most analyses offer a list — in this mock it is the same list whichever one you pick.',
       'tips.7':'<b>Family:</b> add a member for family history and/or for the analysis — a pedigree is drawn in both cases.',""")
 
 rep("""      'ui.docsToggle':'Codes',""",
     """      'ui.docsToggle':'Codes', 'ui.tips':'ⓘ Instructions',
       'tips.title':'Instructions', 'tips.close':'Fermer',
-      'tips.1':'<b>Menu Analyse :</b> filtrez par mot ou numéro d’acte.',
+      'tips.1':'<b>Menu Analyse :</b> filtrez par nom, code, ou numéro d’analyse.',
       'tips.2':'<b>Cas prénatal :</b> cochez-le à la section 1 — l’identifiant de la section 2 devient celui de la mère.',
-      'tips.3':'<b>Recherche de patient :</b> <b>1234</b> + CHU Sainte-Justine, le seul dossier existant.',
+      'tips.3':'<b>Recherche de patient :</b> à la section 2, saisissez <b>1234</b> dans « Identifiant » et choisissez <b>CHU Sainte-Justine</b> dans « Établissement du patient ». La recherche part une fois les deux remplis et ouvre une fiche à confirmer ; tout autre identifiant donne « nouveau patient ».',
       'tips.4':'<b>Signes cliniques :</b> au moins un phénotype observé est requis.',
       'tips.5':'<b>La recherche HPO suit la langue</b> — un terme anglais ne donne rien en français.',
-      'tips.6':'<b>Phénotypes suggérés :</b> choisissez l’analyse <b>RGDI</b> pour en voir une liste.',
+      'tips.6':'<b>Phénotypes suggérés :</b> la plupart des analyses en proposent une liste — dans cette maquette, c’est la même quelle que soit l’analyse choisie.',
       'tips.7':'<b>Famille :</b> ajoutez un membre pour les antécédents familiaux et/ou pour l’analyse — dans les deux cas, un pedigree est tracé.',""")
 
 # -------------------------------------------------------------------- 6 · JS
