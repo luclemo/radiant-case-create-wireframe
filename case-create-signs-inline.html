@@ -264,7 +264,7 @@
   .rail{position:sticky;top:24px}
   .rail .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px}
   .rail .card + .card{margin-top:16px}
-  .rail h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 12px}
+  .rail h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:22px 0 12px}
   .sumrow{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:12px}
   .sumrow:last-of-type{border-bottom:0}
   .sumrow .k{color:var(--mut)}
@@ -277,7 +277,9 @@
        display:grid;place-items:center;font-size:13px;font-weight:600;cursor:not-allowed;transition:background .2s ease}
   .cta.ready{background:var(--accent);cursor:pointer}
   .cta.ghost{background:#fff;color:var(--mut);border:1px solid var(--line);height:34px;font-weight:500;margin-top:8px;cursor:pointer}
-  .railnote{font-size:11px;color:var(--faint);margin-top:12px;line-height:1.4}
+  /* empty at rest — :empty collapses it so it costs no height until flashNote() writes */
+  .railflash{font-size:11px;color:var(--mut);margin:10px 0 0;line-height:1.4}
+  .railflash:empty{display:none}
 
   /* case-type badge riding the Analysis summary value (germline / somatic) */
   .badge{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.03em;
@@ -702,6 +704,28 @@
     <!-- RIGHT: summary rail -->
     <div class="rail">
       <div class="card">
+        <!-- The two actions lead the card (2026-09-16). They used to close it, under the
+             pedigree — and with a pedigree drawn the rail is taller than a laptop viewport, so
+             Create sat below the fold until you scrolled. At the top they are always in view,
+             and the progress bar reads as a caption on the button it gates rather than as the
+             tail of the summary list. Order is button · button · bar · count: the actions first
+             because they are what the rail is for, the bar and its count immediately under them
+             because they say why Create is not available yet.
+             Save draft is NOT gated — see footnote 9. -->
+        <div class="cta" id="btn-create" data-i18n="rail.create">Create case</div>
+        <!-- the label is wrapped: .cta is a grid, so a bare <sup> sibling would become a second
+             row instead of a superscript, and localize() would overwrite it if it shared the
+             element carrying data-i18n -->
+        <div class="cta ghost" id="btn-draft"><span><span data-i18n="rail.draft">Save draft</span><sup class="fn">9</sup></span></div>
+        <div class="pct"><i id="pct-bar"></i></div>
+        <div class="note" style="text-align:right" id="req-count">0 of 7 required fields</div>
+        <!-- transient Create/Draft feedback, and nothing else: empty at rest, so it collapses to
+             no height and the summary starts right under the count. The standing hint that used
+             to live here (« Enregistrez un brouillon à tout moment… ») became footnote 9 on
+             2026-09-16 — it explained a feature rather than reporting state, which is what the
+             reviewer annotations are for. -->
+        <p class="railflash" id="railflash"></p>
+
         <h3 data-i18n="rail.summary">Case summary</h3>
         <!-- Analysis value carries the derived case type as a badge (germline/somatic);
              affected status is inferred (proband always affected) and not shown at all. -->
@@ -749,14 +773,6 @@
         <!-- the live pedigree belongs to the summary, under the row that counts the members;
              hidden until a relative has a relationship, so it costs no height before then -->
         <div id="pedigree" class="pedigree" hidden></div>
-
-        <!-- progress sits at the end of the list, right above the submit button -->
-        <div class="pct"><i id="pct-bar"></i></div>
-        <div class="note" style="text-align:right" id="req-count">0 of 7 required fields</div>
-
-        <div class="cta" id="btn-create" data-i18n="rail.create">Create case</div>
-        <div class="cta ghost" id="btn-draft" data-i18n="rail.draft">Save draft</div>
-        <p class="railnote" id="railnote" data-i18n="rail.note.hint">Save draft anytime — a partial requisition can be captured now and finished later. Required fields are only enforced at Create.</p>
       </div>
 
       <div class="notes-legend">
@@ -770,6 +786,7 @@
           <li data-i18n-html="note.6">Health number is nullable — RAMQ in Quebec, other JHN elsewhere.</li>
           <li data-i18n-html="note.7">One onset range per observed term, from the HPO onset value set; optional.</li>
           <li data-i18n-html="note.8">A sequenced relative needs a real identifier and patient organization. It defaults to the proband's (it drives per-patient PHI masking) and is editable if the relative was seen elsewhere.</li>
+          <li data-i18n-html="note.9">Save draft is always available — a partial requisition can be captured now and finished later. Required fields are only enforced at Create, so the progress bar gates that button alone.</li>
         </ol>
       </div>
     </div>
@@ -19761,7 +19778,6 @@
       'gestAbbr.LMP':'LMP', 'gestAbbr.EDD':'EDD',
       'rail.condition':'Primary indication', 'rail.pheno':'Phenotypes', 'rail.consang':'Consanguinity', 'rail.ancestry':'Ethnicities',
       'rail.note':'Clinical note', 'rail.family':'Family', 'rail.create':'Create case', 'rail.draft':'Save draft',
-      'rail.note.hint':'Save draft anytime — a partial requisition can be captured now and finished later. Required fields are only enforced at Create.',
       'reqCount':'{done} of {total} required fields',
       'terms.zero':'0 terms', 'terms.one':'{n} term', 'terms.many':'{n} terms',
       'members.zero':'0 members', 'members.one':'{n} member', 'members.many':'{n} members',
@@ -19787,7 +19803,8 @@
       'note.5':'Study is optional — usually assigned administratively after intake. (Diverges from today\'s required project field.)',
       'note.6':'Health number is nullable — RAMQ in Quebec, other JHN elsewhere.',
       'note.7':'One onset range per observed term, from the HPO onset value set; optional.',
-      'note.8':'A sequenced relative needs the same fields as the proband — identifier, patient organization, date of birth. The organization defaults to the proband\'s (it drives per-patient PHI masking) and is editable if the relative was seen elsewhere.'
+      'note.8':'A sequenced relative needs the same fields as the proband — identifier, patient organization, date of birth, first and last name. The organization defaults to the proband\'s (it drives per-patient PHI masking) and is editable if the relative was seen elsewhere.',
+      'note.9':'Save draft is always available — a partial requisition can be captured now and finished later. Required fields are only enforced at Create, so the progress bar gates that button alone.'
     },
     fr:{
       'crumb.cases':'Cas', 'crumb.new':'Créer un cas', 'app.title':'Créer un cas • Signes en ligne',
@@ -19864,7 +19881,6 @@
       'gestAbbr.LMP':'DDM', 'gestAbbr.EDD':'DPA',
       'rail.condition':'Indication principale', 'rail.pheno':'Phénotypes', 'rail.consang':'Consanguinité', 'rail.ancestry':'Ethnicité(s)',
       'rail.note':'Note clinique', 'rail.family':'Famille', 'rail.create':'Créer le cas', 'rail.draft':'Enregistrer le brouillon',
-      'rail.note.hint':'Enregistrez un brouillon à tout moment — une requête partielle peut être saisie maintenant et complétée plus tard. Les champs requis ne sont exigés qu’à la création.',
       'reqCount':'{done} sur {total} champs requis',
       'terms.zero':'0 terme', 'terms.one':'{n} terme', 'terms.many':'{n} termes',
       'members.zero':'0 membre', 'members.one':'{n} membre', 'members.many':'{n} membres',
@@ -19890,7 +19906,8 @@
       'note.5':'L’étude est facultative — habituellement assignée administrativement après l’admission. (Diverge du champ projet actuellement requis.)',
       'note.6':'Le numéro d’assurance maladie est nullable — RAMQ au Québec, autre NAM ailleurs.',
       'note.7':'Une seule plage d’âge d’apparition par terme observé, tirée du jeu de valeurs d’apparition HPO ; optionnel.',
-      'note.8':'Un membre séquencé requiert les mêmes champs que le cas index — identifiant, établissement du patient, date de naissance. L’établissement reprend par défaut celui du cas index (il pilote le masquage des RPI par patient) et reste modifiable si le membre a été vu ailleurs.'
+      'note.8':'Un membre séquencé requiert les mêmes champs que le cas index — identifiant, établissement du patient, date de naissance, prénom et nom. L’établissement reprend par défaut celui du cas index (il pilote le masquage des RPI par patient) et reste modifiable si le membre a été vu ailleurs.',
+      'note.9':'« Enregistrer le brouillon » est toujours disponible — une requête partielle peut être saisie maintenant et complétée plus tard. Les champs requis ne sont exigés qu’à la création : la barre de progression ne conditionne que ce bouton.'
     }
   };
   /* option-value translations (canonical English value → French display) */
@@ -21433,12 +21450,15 @@
   }
 
   /* ---------- create / draft (prototype no-ops with feedback) ---------- */
+  /* Create/Draft feedback. The line is empty at rest and collapses, so it costs no height and
+     the summary sits directly under the count; a flash pushes the summary down for its 2.4 s and
+     lets it back up. It sits under the buttons that raise it — which is why the whole action
+     block moved to the top of the card together rather than the buttons alone. */
   function flashNote(msg){
-    var note = document.getElementById('railnote'), prev = note.getAttribute('data-base') || note.textContent;
-    note.setAttribute('data-base', prev);
+    var note = document.getElementById('railflash');
     note.textContent = msg;
     clearTimeout(note._t);
-    note._t = setTimeout(function(){ note.textContent = note.getAttribute('data-base'); }, 2400);
+    note._t = setTimeout(function(){ note.textContent = ''; }, 2400);
   }
   /* ---- inline validation for conditionally-required fields (checked only at submit) ---- */
   function setFieldError(ctrl, msg){
@@ -21549,8 +21569,8 @@
     if(!document.getElementById('hpo-tree-modal').hasAttribute('hidden')) renderTree();
     /* any inline "required" errors currently showing (all share the one message) */
     document.querySelectorAll('.fielderr').forEach(function(el){ el.textContent = t('err.required'); });
-    /* railnote is also driven by flashNote — drop any stale restore text on switch */
-    var rn = document.getElementById('railnote'); rn.removeAttribute('data-base'); clearTimeout(rn._t);
+    /* a flash is a message in the old language — drop it rather than leave it stranded */
+    var rn = document.getElementById('railflash'); rn.textContent = ''; clearTimeout(rn._t);
     syncFamilyOrg();
     refreshChevrons();
     document.querySelectorAll('#langsw button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lang') === lang); });

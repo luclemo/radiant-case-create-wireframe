@@ -1,8 +1,10 @@
 # CLAUDE.md
 
 Notes for whoever (human or Claude) picks this repo up next — including on a different machine.
-Last brought up to date: **2026-09-16**, when first and last name and clinical signs joined
-the required gate, and the rail's prenatal labels and section 5's copy were sharpened. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
+Last brought up to date: **2026-09-16**, after the seven "minor UI improvements" (required
+names, the rail's « Nom » row, « Sexe (mère) », « Famille », clinical signs in the gate,
+a clearable consanguinity, a shorter relation placeholder) and the move of Create / Save draft
+to the head of the rail. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
 not been re-verified since.
 
 ## What this repo is
@@ -204,7 +206,15 @@ in the analysis. Break any one and the ordinary block comes back.
 **Rail** — Analyse (+ germline/somatic badge) · Catégorie · Priorité · ID cas index ·
 Établissement du patient · Sexe · Date de naissance · **Nom** · **Phénotypes**, then
 « Ajouts facultatifs »: Indication principale · Consanguinité · Ethnicité(s) · Note clinique ·
-Famille, then the **live pedigree** under the Famille row, and the `x sur 7 champs requis` gate.
+Famille, then the **live pedigree** under the Famille row, which now **closes** the card.
+
+**The two actions lead the card** (2026-09-16): Créer le cas · Enregistrer le brouillon · the
+progress bar · `x sur 7 champs requis`, then 22px of air, then « Résumé du cas » and its rows.
+They used to close it, under the pedigree — and with a pedigree drawn the rail is taller than a
+laptop viewport, so Create sat below the fold until you scrolled (the caveat two paragraphs down
+described exactly this). At the top they are always in view, and the bar reads as a caption on
+the button it gates rather than as the tail of the summary list. The bar and count follow the
+buttons rather than leading them because they exist to say *why* Create is unavailable.
 
 « Nom » and « Phénotypes » both joined the required group on 2026-09-16 — see the decisions
 below. « Nom » sits last among the identity rows, the way section 2 places the names last in
@@ -229,9 +239,11 @@ gestational-age row carries what is stored **and** what is derived from it —
 
 The shell is **1200 px** wide and the rail **340 px** (both widened on 2026-09-10 to give the
 pedigree somewhere to live). The rail is `position:sticky; top:24px`: with a pedigree drawn it
-can exceed a laptop viewport, so the bottom of it — progress bar and Create — sits below the
-fold until you scroll. That resolves on scroll, since sticky releases once the page runs out of
-room; it is not clipped.
+can still exceed a laptop viewport, so its **bottom** — now the pedigree — sits below the fold
+until you scroll. That resolves on scroll, since sticky releases once the page runs out of room;
+it is not clipped. **This stopped mattering for the controls on 2026-09-16**, when Create and the
+progress bar moved to the head of the card: what falls below the fold is now a picture, not the
+button you came for.
 
 ### Conventions inside the wireframe
 
@@ -255,16 +267,16 @@ room; it is not clipped.
   five were left alone; a placeholder you cannot read names nothing. The key stays
   `ph.selRelation` rather than collapsing into `ph.select`: one key per control is what lets
   this one change without moving the others, and it keeps `ph.select` a genuine fallback.
-  `ph.select` still survives only as the fallback
-  `clearCtrl()` / `renderChips()` / `syncFamilyOrg()` reach for when a control declares none —
-  no control in the form does any more. `localize()` copies a div-select's `data-i18n-ph` into
-  `dataset.ph`, which is what makes clearing one restore *its* placeholder and not the generic
-  one. Free-text placeholders say what to type too: the prescriber field asks « Qui demande
-  cette analyse ». The name fields read « Prénom » / « Nom » — they said
-  « Prénom (facultatif) » / « Nom (facultatif) » until **2026-09-16, when the names became
-  required** and the parenthetical said the opposite of the truth. A bare echo of the label is
-  all that is left to say: unlike the identifier or the health number, a name has no format or
-  example to offer. (`ph.optional` and `ph.freetext` were retired in 2026-09-10.)
+  `ph.select` still survives only as the fallback `clearCtrl()` / `renderChips()` /
+  `syncFamilyOrg()` reach for when a control declares none — no control in the form does.
+  `localize()` copies a div-select's `data-i18n-ph` into `dataset.ph`, which is what makes
+  clearing one restore *its* placeholder and not the generic one. Free-text placeholders say
+  what to type too: the prescriber field asks « Qui demande cette analyse ». The name fields
+  read « Prénom » / « Nom » — they said « Prénom (facultatif) » / « Nom (facultatif) » until
+  **2026-09-16, when the names became required** and the parenthetical said the opposite of the
+  truth. A bare echo of the label is all that is left to say: unlike the identifier or the
+  health number, a name has no format or example to offer. (`ph.optional` and `ph.freetext`
+  were retired in 2026-09-10.)
 - **« Inconnu » is an answer, so the rail inks it** (2026-09-10). A rail value goes dark
   (`.v.done`) as soon as the user has answered, Unknown included — Consanguinité « Inconnue »
   and Sexe « Inconnu » read like any other filled value. Only the em-dash placeholder stays
@@ -300,7 +312,7 @@ room; it is not clipped.
   family member's identification block. Nothing hidden should end up in the case. The
   not-observed list no longer works this way: it has no checkbox, so its badges are dropped one
   at a time and never wholesale.
-- **Reviewer annotations** — the `field_code` hints, footnotes `note.1`…`note.8` and the
+- **Reviewer annotations** — the `field_code` hints, footnotes `note.1`…`note.9` and the
   `.notes-legend` block — are toggled by the **Codes** button (`#docs-toggle`, flips
   `body.hide-docs`), hidden by default. When a label is dropped, its annotations move to whatever
   replaced it rather than disappearing.
@@ -433,7 +445,8 @@ room; it is not clipped.
   on its own is a half-answer and the row stays muted while showing what there is.
   `validateConditionals()` checks the two **separately** on a section 5 card ticked into the
   analysis, because that function marks fields rather than counting rows, and a field is either
-  filled or it is not.
+  filled or it is not. The placeholders were rewritten in the same change — see the placeholder
+  convention above.
   - The mirrored « Mère » card is still skipped there: her identity is section 2's, which the
     core gate already requires.
   - §5's « Dossier patient » line **keeps** its no-name fallback. It looks unreachable now that
@@ -456,6 +469,28 @@ room; it is not clipped.
   Sexe, and section 5's own sex and affected-status segments — so a general toggle would let a
   stray second click un-answer a required field. Consanguinity is optional, and « Inconnu » is a
   claim (nobody knows) rather than the absence of one, so "no answer" needed a way back.
+
+- **Create and Save draft lead the rail card** (2026-09-16, Lucas). They used to close it, below
+  the pedigree; a drawn pedigree makes the rail taller than a laptop viewport, so the primary
+  action sat below the fold. The whole action block moved together — buttons, progress bar,
+  count — because the bar and the count explain the button and are useless apart from it.
+  22px then separates the block from « Résumé du cas », the same value `.notes-legend` uses for
+  its own break. This also retires the "Create sits below the fold" caveat, which was a parked
+  item rather than a fixed one.
+  - **The standing hint under the buttons became footnote 9.** « Enregistrez un brouillon à tout
+    moment… » explained a *feature*; the reviewer annotations are where this file explains
+    features, and the rail is where it reports *state*. The `rail.note.hint` keys were retired
+    and `note.9` carries the copy, anchored by a `<sup class="fn">9</sup>` on Save draft itself —
+    every other note has an anchor, and the button is the thing it describes. The marker is
+    wrapped in a `<span>` with the label: `.cta` is `display:grid`, so a bare `<sup>` sibling
+    becomes a second row instead of a superscript, and `localize()` would overwrite it if it
+    shared the element carrying `data-i18n`.
+  - **`flashNote()` now writes to `#railflash`**, a line that is **empty at rest** and collapsed
+    by `.railflash:empty{display:none}`, so it costs no height and the summary starts directly
+    under the count. A flash pushes the summary down for its 2.4 s and lets it back up — a
+    deliberate trade for keeping the feedback under the button that raised it, rather than
+    reserving dead space for a message that is usually absent. A language switch clears a live
+    flash instead of leaving a message stranded in the old language.
 
 - **User text is never concatenated into `innerHTML`.** There is no escaping helper in this file;
   mixed content is built from `createTextNode` / `createElement` (`markMatch`, `renderChips`,
