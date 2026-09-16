@@ -19774,6 +19774,7 @@
       'type.Germline':'Germline', 'type.Somatic':'Somatic',
       'rail.summary':'Case summary', 'rail.analysis':'Analysis', 'rail.category':'Category', 'rail.probandId':'Proband ID',
       'rail.issuing':'Patient organization', 'rail.sex':'Sex', 'rail.dob':'Date of birth', 'rail.optAdditions':'Optional additions',
+      'comp.2':'Duo', 'comp.3':'Trio', 'comp.4':'Quad', 'comp.many':'{n} sequenced',
       'rail.motherId':'Mother ID', 'rail.name':'Name', 'rail.sexMother':'Sex (mother)', 'rail.fetal':'Fetal information', 'rail.fetalSex':'Fetal sex', 'rail.gestAge':'Gestational age',
       'gestAbbr.LMP':'LMP', 'gestAbbr.EDD':'EDD',
       'rail.condition':'Primary indication', 'rail.pheno':'Phenotypes', 'rail.consang':'Consanguinity', 'rail.ancestry':'Ethnicities',
@@ -19877,6 +19878,7 @@
       'type.Germline':'Germinal', 'type.Somatic':'Somatique',
       'rail.summary':'Résumé du cas', 'rail.analysis':'Analyse', 'rail.category':'Catégorie', 'rail.probandId':'ID cas index',
       'rail.issuing':'Établissement du patient', 'rail.sex':'Sexe', 'rail.dob':'Date de naissance', 'rail.optAdditions':'Ajouts facultatifs',
+      'comp.2':'Duo', 'comp.3':'Trio', 'comp.4':'Quatuor', 'comp.many':'{n} séquencés',
       'rail.motherId':'ID mère', 'rail.name':'Nom', 'rail.sexMother':'Sexe (mère)', 'rail.fetal':'Informations fœtales', 'rail.fetalSex':'Sexe fœtal', 'rail.gestAge':'Âge gestationnel',
       'gestAbbr.LMP':'DDM', 'gestAbbr.EDD':'DPA',
       'rail.condition':'Indication principale', 'rail.pheno':'Phénotypes', 'rail.consang':'Consanguinité', 'rail.ancestry':'Ethnicité(s)',
@@ -20266,15 +20268,46 @@
     if(!document.getElementById('hpo-tree-modal').hasAttribute('hidden')) renderTree();
     recompute();
   }
-  /* rail Analysis row = code + the derived case-type badge (germline/somatic), rebuilt on
-     language switch so the badge text follows the language */
+  /* How many people this case sequences: the proband, plus every family card ticked into the
+     analysis. Reported-only relatives do NOT count — a trio means three people sequenced, not
+     three relatives mentioned — which is the same split the rest of section 5 draws, and the
+     opposite of the pedigree's (it draws the family, not the batch). In a prenatal case the
+     proband is the fetus and « Mère » ticked in is the second person, so the count holds
+     without a special case. */
+  function seqCount(){
+    var n = 1;
+    famList.querySelectorAll('.frow [data-fam-seq]').forEach(function(c){
+      if(c.classList.contains('on')) n++;
+    });
+    return n;
+  }
+  /* Solo carries no badge: it is the default and the common case, so labelling it would put a
+     word on nearly every case to say nothing. The named ladder stops at four — duo, trio and
+     quad are the terms clinicians actually use, and nobody says "sextet" — so five and up fall
+     back to the count itself. */
+  function compLabel(n){
+    if(n < 2) return null;
+    return n <= 4 ? t('comp.' + n) : t('comp.many', { n:n });
+  }
+  /* rail Analysis row = code + the derived case-type badge (germline/somatic) + the family
+     composition, rebuilt on language switch so both badges follow the language. The
+     composition badge is the PLAIN .badge — the neutral variant — so the only colour in the
+     row stays on the case type, which is the clinical fact; composition is a count. */
   function renderAnalysisSummary(){
     var el = document.querySelector('[data-sel="analysis"]');
     var out = document.getElementById('sum-analysis');
-    if(!(state.analysisSet && el.dataset.value)){ out.textContent = '—'; out.classList.remove('done'); return; }
+    var comp = compLabel(seqCount());
+    var compHtml = comp ? ' <span class="badge comp">' + comp + '</span>' : '';
+    if(!(state.analysisSet && el.dataset.value)){
+      /* the composition is true whether or not an analysis has been picked, so it still shows
+         beside the em-dash rather than waiting for a field it does not depend on */
+      out.innerHTML = '—' + compHtml;
+      out.classList.remove('done');
+      return;
+    }
     var a = ANALYSES.filter(function(x){ return x.code === el.dataset.value; })[0];
     var cls = a.type === 'Somatic' ? 'somatic' : 'germline';
-    out.innerHTML = a.code + ' <span class="badge ' + cls + '">' + typeLabel(a.type) + '</span>';
+    out.innerHTML = a.code + ' <span class="badge ' + cls + '">' + typeLabel(a.type) + '</span>' + compHtml;
     out.classList.add('done');
   }
   /* rail shows a concise condition: drop the "(MONDO:…)" code and any " — hint" suffix */
@@ -21126,7 +21159,7 @@
         box.setAttribute('hidden','');
         emptyFamSeq(row);
       }
-      syncProbandLink();
+      recompute();   // the composition badge counts ticked cards, so the rail repaints
     });
     /* issuing site defaults to the proband's org (via syncFamilyOrg) but is editable;
        a manual pick sets 'overridden' so it no longer follows the proband */
@@ -21143,7 +21176,7 @@
     row.querySelector('[data-fam-seq-id]').addEventListener('input', function(){ clearFieldError(this); });
     row.querySelector('[data-fam-seq-dob]').addEventListener('input', function(){ clearFieldError(this); });
     row.querySelector('.famx').addEventListener('click', function(){
-      row.remove(); sumFamily(); renderPedigree();
+      row.remove(); sumFamily(); recompute();   // recompute redraws the pedigree too
     });
     famList.appendChild(row);
     localize(row);   // translate the new row's labels/placeholders into the current language
@@ -21152,9 +21185,8 @@
     var preset = FAM_PRESET.filter(function(r){ return famUsed.indexOf(r) === -1; })[0];
     if(preset) famApplyRelation(row, preset);
     syncFamilyOrg();   // a relative inherits the proband's patient organization (editable after)
-    syncProbandLink();
     sumFamily();
-    renderPedigree();
+    recompute();       // draws the pedigree, repaints the rail and its composition badge
   });
   /* ---------- prenatal: the mother's card reuses section 2's identification ----------
      In a prenatal case the proband is the FETUS; section 2 carries the mother's identity only

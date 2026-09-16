@@ -3,8 +3,8 @@
 Notes for whoever (human or Claude) picks this repo up next — including on a different machine.
 Last brought up to date: **2026-09-16**, after the seven "minor UI improvements" (required
 names, the rail's « Nom » row, « Sexe (mère) », « Famille », clinical signs in the gate,
-a clearable consanguinity, a shorter relation placeholder) and the move of Create / Save draft
-to the head of the rail. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
+a clearable consanguinity, a shorter relation placeholder), the move of Create / Save draft to
+the head of the rail, and the family-composition badge. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
 not been re-verified since.
 
 ## What this repo is
@@ -203,7 +203,8 @@ case and switching the card to another relative opens a blank block rather than 
 identifiers to a sister. `mirroredFamRow()` decides: prenatal on **and** relation Mother **and**
 in the analysis. Break any one and the ordinary block comes back.
 
-**Rail** — Analyse (+ germline/somatic badge) · Catégorie · Priorité · ID cas index ·
+**Rail** — Analyse (+ germline/somatic badge, + a family-composition badge once the case is
+not solo) · Catégorie · Priorité · ID cas index ·
 Établissement du patient · Sexe · Date de naissance · **Nom** · **Phénotypes**, then
 « Ajouts facultatifs »: Indication principale · Consanguinité · Ethnicité(s) · Note clinique ·
 Famille, then the **live pedigree** under the Famille row, which now **closes** the card.
@@ -491,6 +492,30 @@ button you came for.
     deliberate trade for keeping the feedback under the button that raised it, rather than
     reserving dead space for a message that is usually absent. A language switch clears a live
     flash instead of leaving a message stranded in the old language.
+
+- **The Analyse row carries a second badge for family composition** (2026-09-16, Lucas):
+  « Duo » · « Trio » · « Quatuor » / "Quad", and past four the count itself
+  (« 5 séquencés » / "5 sequenced"). It counts the **proband plus every card ticked into the
+  analysis** — a reported-only relative does not count, because a trio means three people
+  sequenced, not three relatives mentioned. That is the same split the rest of section 5 draws,
+  and deliberately the **opposite** of the pedigree's, which draws the family rather than the
+  batch; the Famille row counts cards, this badge counts the batch, and the two disagreeing is
+  correct.
+  - **Solo shows nothing.** It is the default and the common case, so a badge would put a word
+    on nearly every case to say nothing. This was the ask, and it is also why the ladder has no
+    « Solo » key.
+  - **The named ladder stops at four.** Duo, trio and quad are the terms clinicians use; nobody
+    says "sextet", so five and up fall back to `comp.many`. « Quatuor » is proper French but
+    **worth checking with Vincent** — lab usage may well be "quad" in both languages, and it is
+    a one-key change. Duo and Trio are identical in the two languages, so `comp.4` and
+    `comp.many` are the only keys that actually differ.
+  - **It uses the plain `.badge`**, the neutral variant, so the only colour in the row stays on
+    the case type — that is a derived clinical fact, while composition is a count.
+  - **It shows even with no analysis picked**, beside the em-dash: the composition is true
+    whether or not the analysis field has been answered, and the row stays muted regardless.
+  - Ticking a card, adding one and removing one all call `recompute()` now. They used to call
+    some mixture of `syncProbandLink()`, `sumFamily()` and `renderPedigree()`, none of which
+    repaints the Analyse row.
 
 - **User text is never concatenated into `innerHTML`.** There is no escaping helper in this file;
   mixed content is built from `createTextNode` / `createElement` (`markMatch`, `renderChips`,
