@@ -160,6 +160,11 @@
   /* the prenatal checkbox stands in for the Category field, so it carries that field's
      annotations beside it rather than under a label of its own */
   .checkline{display:flex;align-items:center;gap:6px;margin-top:6px}
+  /* label + input revealed together when « Je suis médecin… » is unticked. The [hidden]
+     rule is not optional: `hidden` only sets display:none as a DEFAULT, and any display of our
+     own beats it — the field was never actually hidden until this was added. */
+  .physwho{display:flex;flex-direction:column;gap:5px}
+  .physwho[hidden]{display:none}
 
   .seg{display:flex;border:1px solid var(--line);border-radius:5px;overflow:hidden;width:fit-content}
   .seg span{padding:7px 14px;font-size:12px;color:var(--mut);border-right:1px solid var(--line);cursor:pointer;user-select:none}
@@ -496,21 +501,29 @@
           <!-- Study runs the full width, under the pair above. The research-consent checkbox that
                used to gate it, down in the optional group, was dropped (2026-09-08). -->
           <div class="f" id="study-field" style="margin-top:14px">
-            <label><span data-i18n="lbl.study">Research study</span> <span class="key">(project_code)</span><sup class="fn">5</sup></label>
+            <label><span data-i18n="lbl.study">Research study</span> <span class="key">(project_code)</span><sup class="fn">3</sup></label>
             <div class="ctrl select" tabindex="0" data-sel="project" data-i18n-ph="ph.selProject">Select a study…</div>
           </div>
 
-          <!-- Ordering physician and site: they used to sit in a collapsed "Optional details"
-               group; that group is gone (2026-09-08) and the whole section shows by default.
-               Physician leads the line. -->
+          <!-- The prescriber, alone on this line since « Établissement prescripteur »
+               (ordering_organization_code) was dropped on 2026-09-25.
+               Derive-and-hide applied to a free-text field: the person filling this form is
+               usually the prescriber, so the answer is a « Moi » checkbox, ticked by default,
+               and the name field only appears when it is somebody else. -->
           <div class="grid" style="margin-top:14px">
             <div class="f">
-              <label><span data-i18n="lbl.physician">Ordering physician</span> <span class="key">(ordering_physician)</span></label>
-              <input class="ctrl" type="text" data-i18n-ph="ph.physician" placeholder="Who is requesting this analysis">
-            </div>
-            <div class="f">
-              <label><span data-i18n="lbl.ordering">Ordering site</span> <span class="key">(ordering_organization_code)</span><sup class="fn">3</sup></label>
-              <div class="ctrl select" tabindex="0" data-sel="ordering" data-i18n-ph="ph.selOrdering">Select a site…</div>
+              <!-- No field label in the default state, because there is no field: the checkbox
+                   carries the whole statement, and the label only exists alongside the input it
+                   labels. The (ordering_physician) annotation rides the checkbox the way the
+                   prenatal one rides its own — a dropped label takes its annotations with it. -->
+              <div class="checkline" style="margin-top:0">
+                <label class="check on" data-check="physself"><span class="box"></span><span data-i18n="lbl.physSelf">I am the ordering or responsible physician</span></label>
+                <span class="key">(ordering_physician)</span>
+              </div>
+              <div class="physwho" id="phys-who" hidden>
+                <label><span data-i18n="lbl.physician">Who is requesting this analysis</span></label>
+                <input class="ctrl" type="text" id="phys-name" data-i18n-ph="ph.physician" placeholder="Physician’s name">
+              </div>
             </div>
           </div>
 
@@ -541,7 +554,7 @@
                  date of birth, sex and life status, and the names last (2026-09-08). The names
                  became required on 2026-09-16 and count as ONE gate item between them. -->
             <div class="f">
-              <label><span data-i18n="lbl.healthNo">Health number</span> <span class="key">(jhn)</span><sup class="fn">6</sup></label>
+              <label><span data-i18n="lbl.healthNo">Health number</span> <span class="key">(jhn)</span><sup class="fn">5</sup></label>
               <input class="ctrl" type="text" data-i18n-ph="ph.jhn" placeholder="RAMQ (QC) or regional JHN" data-field="jhn">
             </div>
             <!-- Date of birth and Sex share the cell Date of birth used to have on its own
@@ -622,7 +635,7 @@
           <div id="signs-block">
             <!-- no "Clinical signs" title: the instruction says it better, and carries the field
                  codes and footnote the title used to hold (2026-09-08) -->
-            <p class="instr"><span data-i18n="dlg.instruction">Select at least one OBSERVED phenotype with its onset</span> <span class="req">*</span> <span class="key">(observed_phenotypes · non_observed_phenotypes)</span><sup class="fn">7</sup></p>
+            <p class="instr"><span data-i18n="dlg.instruction">Select at least one OBSERVED phenotype with its onset</span> <span class="req">*</span> <span class="key">(observed_phenotypes · non_observed_phenotypes)</span><sup class="fn">6</sup></p>
             <!-- the two ways in — type-ahead and the tree — sit directly under the ask and stay
                  put (2026-09-10). What has been picked, and the suggestions, follow below. -->
             <div class="msearchrow">
@@ -682,7 +695,7 @@
 
       <!-- 5. Family (optional) -->
       <section class="sec">
-        <header><span class="n">5</span><h2 data-i18n="sec.family">Family analysis</h2><span class="chev" data-i18n="ui.collapse">－ collapse</span></header>
+        <header><span class="n">5</span><h2><span data-i18n="sec.family">Family analysis</span><sup class="fn">7</sup></h2><span class="chev" data-i18n="ui.collapse">－ collapse</span></header>
         <div class="body">
           <!-- This section owns both family roles as of 2026-09-10: a relative is recorded here
                whether they are only being reported as history or are also being sequenced. The
@@ -716,7 +729,7 @@
         <!-- the label is wrapped: .cta is a grid, so a bare <sup> sibling would become a second
              row instead of a superscript, and localize() would overwrite it if it shared the
              element carrying data-i18n -->
-        <div class="cta ghost" id="btn-draft"><span><span data-i18n="rail.draft">Save draft</span><sup class="fn">9</sup></span></div>
+        <div class="cta ghost" id="btn-draft"><span><span data-i18n="rail.draft">Save draft</span><sup class="fn">8</sup></span></div>
         <div class="pct"><i id="pct-bar"></i></div>
         <div class="note" style="text-align:right" id="req-count">0 of 7 required fields</div>
         <!-- transient Create/Draft feedback, and nothing else: empty at rest, so it collapses to
@@ -780,13 +793,12 @@
         <ol class="notes">
           <li data-i18n-html="note.1"><b>Case type</b> (germline/somatic) is derived from the analysis and shown as a badge — not an input. Assumes one case type per panel; confirm backend&nbsp;#32.</li>
           <li data-i18n-html="note.2">Category (<span class="key">category_code</span>) is required and never null. User control is a Prenatal checkbox, off by default. Unchecked = Postnatal.</li>
-          <li data-i18n-html="note.3">Ordering site is optional here — the org that requested the analysis. Independent of the patient organization. (Diverges from today's required ordering site.)</li>
-          <li data-i18n-html="note.4">The patient organization is an independent required pick — the patient's site of care (FHIR <span class="key">managingOrganization</span>). This field, not the ordering site, controls per-patient PHI visibility, so it's not derived or hidden.</li>
-          <li data-i18n-html="note.5">Study is optional — usually assigned administratively after intake. (Diverges from today's required project field.)</li>
-          <li data-i18n-html="note.6">Health number is nullable — RAMQ in Quebec, other JHN elsewhere.</li>
-          <li data-i18n-html="note.7">One onset range per observed term, from the HPO onset value set; optional.</li>
-          <li data-i18n-html="note.8">A sequenced relative needs a real identifier and patient organization. It defaults to the proband's (it drives per-patient PHI masking) and is editable if the relative was seen elsewhere.</li>
-          <li data-i18n-html="note.9">Save draft is always available — a partial requisition can be captured now and finished later. Required fields are only enforced at Create, so the progress bar gates that button alone.</li>
+          <li data-i18n-html="note.3">Study is optional — usually assigned administratively after intake. (Diverges from today's required project field.)</li>
+          <li data-i18n-html="note.4">The patient organization is an independent required pick — the patient's site of care (FHIR <span class="key">managingOrganization</span>). It controls per-patient PHI visibility, so it's not derived or hidden.</li>
+          <li data-i18n-html="note.5">Health number is nullable — RAMQ in Quebec, other JHN elsewhere.</li>
+          <li data-i18n-html="note.6">One onset range per observed term, from the HPO onset value set; optional.</li>
+          <li data-i18n-html="note.7">A sequenced relative needs a real identifier and patient organization. It defaults to the proband's and is editable if the relative was seen elsewhere.</li>
+          <li data-i18n-html="note.8">Save draft is always available — a partial requisition can be captured now and finished later. Required fields are only enforced at Create, so the progress bar gates that button alone.</li>
         </ol>
       </div>
     </div>
@@ -908,7 +920,6 @@
   ];
   var ORGS = ['CHU Sainte-Justine','CHUM','CUSM — McGill','CHU de Québec'];
   var OPTIONS = {
-    ordering:  ORGS,
     issuing:   ORGS,
     priority:  ['Routine','Urgent','STAT'],
     project:   ['Pragmatic','Care4Rare','RQDM'],
@@ -19718,7 +19729,7 @@
       'gest.week':'{n} week', 'gest.weeks':'{n} weeks', 'gest.weeksShort':'{n} wk',
       'lbl.lmpDate':'Date (LMP)', 'lbl.eddDate':'Date (EDD)',
       'rail.priority':'Priority',
-      'lbl.ordering':'Ordering site', 'lbl.physician':'Ordering physician', 'lbl.study':'Research study (consent obtained)',
+      'lbl.physician':'Who is requesting this analysis', 'lbl.physSelf':'I am the ordering or responsible physician', 'lbl.study':'Research study (consent obtained)',
       'lbl.issuing':'Patient organization', 'lbl.patientId':'Identifier', 'lbl.healthNo':'Health number',
       'lbl.firstName':'First name', 'lbl.lastName':'Last name', 'lbl.sex':'Sex', 'lbl.dob':'Date of birth',
       'lbl.condition':'Primary indication (MONDO)', 'lbl.dobShort':'DOB',
@@ -19751,10 +19762,10 @@
       'lbl.relation':'Relationship', 'lbl.relative':'Family member', 'lbl.affected':'Affected status',
       'lbl.fhSpecify':'Specify', 'ph.specify':'Free text',
       'ph.select':'Select…', 'ph.analysis':'Select an analysis…',
-      'ph.selProject':'Select a study…', 'ph.selOrdering':'Select a site…',
+      'ph.selProject':'Select a study…',
       'ph.selIssuing':'Select an organization…', 'ph.selAncestry':'Select ethnicities…',
       'ph.selRelation':'Select…',
-      'ph.idValue':'MRN, Study code, etc…', 'ph.physician':'Who is requesting this analysis',
+      'ph.idValue':'MRN, Study code, etc…', 'ph.physician':'Physician’s name',
       'ph.firstName':'First name', 'ph.lastName':'Last name',
       'ph.jhn':'RAMQ (QC) or regional JHN', 'ph.dob':'YYYY-MM-DD',
       'ph.condition':'Search an indication (name or MONDO:…)',
@@ -19799,13 +19810,12 @@
       'note.cap':'Reviewer annotations — not part of the UI.',
       'note.1':'<b>Case type</b> (germline/somatic) is derived from the analysis and shown as a badge — not an input. Assumes one case type per panel; confirm backend&nbsp;#32.',
       'note.2':'Category (<span class="key">category_code</span>) is required and never null. User control is a Prenatal checkbox, off by default. Unchecked = Postnatal.',
-      'note.3':'Ordering site is optional here — the org that requested the analysis. Independent of the patient organization. (Diverges from today\'s required ordering site.)',
-      'note.4':'The patient organization is an independent required pick — the patient\'s site of care (FHIR <span class="key">managingOrganization</span>). This field, not the ordering site, controls per-patient PHI visibility, so it\'s not derived or hidden.',
-      'note.5':'Study is optional — usually assigned administratively after intake. (Diverges from today\'s required project field.)',
-      'note.6':'Health number is nullable — RAMQ in Quebec, other JHN elsewhere.',
-      'note.7':'One onset range per observed term, from the HPO onset value set; optional.',
-      'note.8':'A sequenced relative needs the same fields as the proband — identifier, patient organization, date of birth, first and last name. The organization defaults to the proband\'s (it drives per-patient PHI masking) and is editable if the relative was seen elsewhere.',
-      'note.9':'Save draft is always available — a partial requisition can be captured now and finished later. Required fields are only enforced at Create, so the progress bar gates that button alone.'
+      'note.3':'Study is optional — usually assigned administratively after intake. (Diverges from today\'s required project field.)',
+      'note.4':'The patient organization is an independent required pick — the patient\'s site of care (FHIR <span class="key">managingOrganization</span>). It controls per-patient PHI visibility, so it\'s not derived or hidden.',
+      'note.5':'Health number is nullable — RAMQ in Quebec, other JHN elsewhere.',
+      'note.6':'One onset range per observed term, from the HPO onset value set; optional.',
+      'note.7':'A sequenced relative needs the same fields as the proband — identifier, patient organization, date of birth, first and last name. The organization defaults to the proband\'s and is editable if the relative was seen elsewhere.',
+      'note.8':'Save draft is always available — a partial requisition can be captured now and finished later. Required fields are only enforced at Create, so the progress bar gates that button alone.'
     },
     fr:{
       'crumb.cases':'Cas', 'crumb.new':'Créer un cas', 'app.title':'Créer un cas • Signes en ligne',
@@ -19822,7 +19832,7 @@
       'gest.week':'{n} semaine', 'gest.weeks':'{n} semaines', 'gest.weeksShort':'{n} sem.',
       'lbl.lmpDate':'Date (DDM)', 'lbl.eddDate':'Date (DPA)',
       'rail.priority':'Priorité',
-      'lbl.ordering':'Établissement prescripteur', 'lbl.physician':'Médecin prescripteur', 'lbl.study':'Étude de recherche (consentement obtenu)',
+      'lbl.physician':'Qui demande cette analyse', 'lbl.physSelf':'Je suis médecin prescripteur ou responsable', 'lbl.study':'Étude de recherche (consentement obtenu)',
       'lbl.issuing':'Établissement du patient', 'lbl.patientId':'Identifiant', 'lbl.healthNo':'RAMQ',
       'lbl.firstName':'Prénom', 'lbl.lastName':'Nom', 'lbl.sex':'Sexe', 'lbl.dob':'Date de naissance',
       'lbl.condition':'Indication principale (MONDO)', 'lbl.dobShort':'DDN',
@@ -19855,10 +19865,10 @@
       'lbl.relation':'Lien de parenté', 'lbl.relative':'Membre de la famille', 'lbl.affected':'Statut',
       'lbl.fhSpecify':'Préciser', 'ph.specify':'Texte libre',
       'ph.select':'Sélectionner…', 'ph.analysis':'Sélectionner une analyse…',
-      'ph.selProject':'Sélectionner une étude…', 'ph.selOrdering':'Sélectionner un établissement…',
+      'ph.selProject':'Sélectionner une étude…',
       'ph.selIssuing':'Sélectionner un établissement…', 'ph.selAncestry':'Sélectionner des ethnicités…',
       'ph.selRelation':'Sélectionner…',
-      'ph.idValue':'MRN, code de l’étude, etc…', 'ph.physician':'Qui demande cette analyse',
+      'ph.idValue':'MRN, code de l’étude, etc…', 'ph.physician':'Nom du médecin',
       'ph.firstName':'Prénom', 'ph.lastName':'Nom',
       'ph.jhn':'RAMQ (QC) ou NAM régional', 'ph.dob':'AAAA-MM-JJ',
       'ph.condition':'Rechercher une indication (nom ou MONDO:…)',
@@ -19903,13 +19913,12 @@
       'note.cap':'Annotations du réviseur — ne font pas partie de l’interface.',
       'note.1':'Le <b>type de cas</b> (germinal/somatique) est dérivé de l’analyse et affiché comme badge — pas un champ de saisie. Suppose un seul type de cas par panel ; à confirmer avec le backend&nbsp;#32.',
       'note.2':'La catégorie (<span class="key">category_code</span>) est requise et jamais nulle. Le contrôle utilisateur est une case « Cas prénatal », décochée par défaut. Décochée = Postnatal.',
-      'note.3':'L’établissement prescripteur est facultatif ici — l’organisation qui a demandé l’analyse. Indépendant de l’établissement du patient. (Diverge de l’établissement prescripteur actuellement requis.)',
-      'note.4':'L’établissement du patient est un choix requis indépendant — le lieu de soins du patient (FHIR <span class="key">managingOrganization</span>). C’est ce champ, et non l’établissement prescripteur, qui contrôle la visibilité des RPI par patient ; il n’est donc ni dérivé ni masqué.',
-      'note.5':'L’étude est facultative — habituellement assignée administrativement après l’admission. (Diverge du champ projet actuellement requis.)',
-      'note.6':'Le numéro d’assurance maladie est nullable — RAMQ au Québec, autre NAM ailleurs.',
-      'note.7':'Une seule plage d’âge d’apparition par terme observé, tirée du jeu de valeurs d’apparition HPO ; optionnel.',
-      'note.8':'Un membre séquencé requiert les mêmes champs que le cas index — identifiant, établissement du patient, date de naissance, prénom et nom. L’établissement reprend par défaut celui du cas index (il pilote le masquage des RPI par patient) et reste modifiable si le membre a été vu ailleurs.',
-      'note.9':'« Enregistrer le brouillon » est toujours disponible — une requête partielle peut être saisie maintenant et complétée plus tard. Les champs requis ne sont exigés qu’à la création : la barre de progression ne conditionne que ce bouton.'
+      'note.3':'L’étude est facultative — habituellement assignée administrativement après l’admission. (Diverge du champ projet actuellement requis.)',
+      'note.4':'L’établissement du patient est un choix requis indépendant — le lieu de soins du patient (FHIR <span class="key">managingOrganization</span>). Il contrôle la visibilité des RPI par patient ; il n’est donc ni dérivé ni masqué.',
+      'note.5':'Le numéro d’assurance maladie est nullable — RAMQ au Québec, autre NAM ailleurs.',
+      'note.6':'Une seule plage d’âge d’apparition par terme observé, tirée du jeu de valeurs d’apparition HPO ; optionnel.',
+      'note.7':'Un membre séquencé requiert les mêmes champs que le cas index — identifiant, établissement du patient, date de naissance, prénom et nom. L’établissement reprend par défaut celui du cas index et reste modifiable si le membre a été vu ailleurs.',
+      'note.8':'« Enregistrer le brouillon » est toujours disponible — une requête partielle peut être saisie maintenant et complétée plus tard. Les champs requis ne sont exigés qu’à la création : la barre de progression ne conditionne que ce bouton.'
     }
   };
   /* option-value translations (canonical English value → French display) */
@@ -20158,7 +20167,7 @@
   }
 
   /* ---------- state ---------- */
-  var state = { analysisSet:false, orderingSet:false, issuingSet:false, conditionSet:false };
+  var state = { analysisSet:false, issuingSet:false, conditionSet:false };
   var probandOrg = null;   // proband's issuing site — inherited by sequenced family members
   var idInput   = document.querySelector('[data-field="patientid"]');
   var dobInput  = document.querySelector('[data-field="dob"]');
@@ -20189,7 +20198,6 @@
       renderPheno();
       if(!document.getElementById('hpo-tree-modal').hasAttribute('hidden')) renderTree();
     }
-    else if(key === 'ordering'){ state.orderingSet = false; }
     else if(key === 'issuing'){ state.issuingSet = false; probandOrg = null; syncFamilyOrg(); }
     if(key === 'issuing') runLookup();
     recompute();
@@ -20243,7 +20251,6 @@
       var cur = el.classList.contains('filled') ? el.dataset.value : null;
       openMenu(el, items(), cur, function(v){
         if(key === 'analysis'){ pickAnalysis(v); }
-        else if(key === 'ordering'){ setSel(el,'ordering',v); state.orderingSet = true; recompute(); }
         else if(key === 'issuing'){ setSel(el,'issuing',v); state.issuingSet = true; probandOrg = v; syncFamilyOrg(); recompute(); runLookup(); }
         else { setSel(el,key,v); recompute(); }
       });
@@ -20317,6 +20324,18 @@
     state.conditionSet = true;
     el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
   }
+
+  /* ---------- prescriber: « Moi » is the common case, so it is the default answer ----------
+     Ticking it again clears whatever name was typed — the same "nothing hidden reaches the
+     case" rule the prenatal block and the family identification block follow. Not in the gate:
+     the field was optional before this change and still is. */
+  document.querySelector('[data-check="physself"]').addEventListener('click', function(){
+    var me = this.classList.toggle('on');
+    var f = document.getElementById('phys-name');
+    document.getElementById('phys-who').toggleAttribute('hidden', me);
+    if(me) f.value = '';
+    else f.focus();   // the field only appears because the user asked for it — put them in it
+  });
 
   /* ---------- category: Prenatal checkbox (off = Postnatal); not derived, not in the gate ---------- */
   document.querySelector('[data-check="prenatal"]').addEventListener('click', function(){
@@ -21122,9 +21141,9 @@
         '<div class="grid align-end">' +
         '<div class="f"><label><span data-i18n="lbl.patientId">Identifier</span> <span class="req">*</span> <span class="key">(submitter_patient_id)</span></label>' +
           '<input class="ctrl" type="text" data-i18n-ph="ph.idValue" placeholder="MRN, Study code, etc…" data-fam-seq-id></div>' +
-        '<div class="f"><label><span data-i18n="lbl.issuing">Patient organization</span> <span class="req">*</span> <span class="key">(patient_organization_code)</span><sup class="fn">8</sup></label>' +
+        '<div class="f"><label><span data-i18n="lbl.issuing">Patient organization</span> <span class="req">*</span> <span class="key">(patient_organization_code)</span></label>' +
           '<div class="ctrl select" tabindex="0" data-fam-seq-org data-i18n-ph="ph.selIssuing">Select an organization…</div></div>' +
-        '<div class="f"><label><span data-i18n="lbl.healthNo">Health number</span> <span class="key">(jhn)</span><sup class="fn">6</sup></label>' +
+        '<div class="f"><label><span data-i18n="lbl.healthNo">Health number</span> <span class="key">(jhn)</span><sup class="fn">5</sup></label>' +
           '<input class="ctrl" type="text" data-i18n-ph="ph.jhn" placeholder="RAMQ (QC) or regional JHN" data-fam-seq-jhn></div>' +
         '<div class="f"><label><span data-i18n="lbl.dob">Date of birth</span> <span class="req">*</span> <span class="key">(date_of_birth)</span></label>' +
           '<input class="ctrl" type="date" data-i18n-ph="ph.dob" placeholder="YYYY-MM-DD" data-fam-seq-dob></div>' +
@@ -21393,10 +21412,10 @@
   }
 
   /* ---------- progress: only the fields the counselor must actively fill ----------
-     Excluded on purpose: category (default-Postnatal checkbox), ordering site (now optional),
-     priority, life status, affected status (arrive pre-set with valid defaults), and
-     diagnostic lab (removed). Issuing site is now an independent required pick (counted),
-     no longer inherited from the ordering site. Phenotypes & family are optional. */
+     Excluded on purpose: category (default-Postnatal checkbox), the prescriber (a « Moi »
+     checkbox with a default answer), priority, life status, affected status (arrive pre-set
+     with valid defaults), and diagnostic lab. Ordering site was removed outright on
+     2026-09-25. Issuing site is an independent required pick, and is counted. */
   /* Clinical context is split across three rail rows, each on its own line. */
   function syncClinicalRows(){
     /* consanguinity — no default; « — » until a value is picked, then inked. « Inconnue » is

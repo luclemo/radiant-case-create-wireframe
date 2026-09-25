@@ -1,7 +1,8 @@
 # CLAUDE.md
 
 Notes for whoever (human or Claude) picks this repo up next — including on a different machine.
-Last brought up to date: **2026-09-16**, after the seven "minor UI improvements" (required
+Last brought up to date: **2026-09-25**, when the prescriber became a single checkbox and
+« Établissement prescripteur » was removed. Before that, **2026-09-16**, after the seven "minor UI improvements" (required
 names, the rail's « Nom » row, « Sexe (mère) », « Famille », clinical signs in the gate,
 a clearable consanguinity, a shorter relation placeholder), the move of Create / Save draft to
 the head of the rail, and the family-composition badge. Parts of the sections below still date from Vincent's 2026-09-08 review session and have
@@ -180,7 +181,10 @@ Five sections, French by default.
 under them the ☐ **Cas prénatal** checkbox (it carries the `category_code` annotation and
 footnote 2, the "Catégorie" label having been dropped); « Étude de recherche (consentement
 obtenu) » (Pragmatic · Care4Rare · RQDM), full width — picking a study *is* the consent, so there
-is no separate checkbox; Médecin prescripteur | Établissement prescripteur.
+is no separate checkbox; then the prescriber, alone on its line and **carrying no field label**
+— just ☑ « Je suis médecin prescripteur ou responsable », with « Qui demande cette
+analyse » + an input appearing only when it is unticked. See the decision below.
+« Établissement prescripteur » (`ordering_organization_code`) was **removed on 2026-09-25**.
 
 **2 · Patient (cas index)** — title becomes « Patient (cas index, mère) » in prenatal mode, where
 Sexe is also prefilled Féminin: in a prenatal case **the proband is the fetus**, and this section
@@ -313,7 +317,9 @@ button you came for.
   `syncFamilyOrg()` reach for when a control declares none — no control in the form does.
   `localize()` copies a div-select's `data-i18n-ph` into `dataset.ph`, which is what makes
   clearing one restore *its* placeholder and not the generic one. Free-text placeholders say
-  what to type too: the prescriber field asks « Qui demande cette analyse ». The name fields
+  what to type too: the prescriber's input asks for « Nom du médecin » (« Qui demande cette
+  analyse » is its *label* since 2026-09-25, so the placeholder says what to type rather than
+  repeating the question). The name fields
   read « Prénom » / « Nom » — they said « Prénom (facultatif) » / « Nom (facultatif) » until
   **2026-09-16, when the names became required** and the parenthetical said the opposite of the
   truth. A bare echo of the label is all that is left to say: unlike the identifier or the
@@ -354,7 +360,7 @@ button you came for.
   family member's identification block. Nothing hidden should end up in the case. The
   not-observed list no longer works this way: it has no checkbox, so its badges are dropped one
   at a time and never wholesale.
-- **Reviewer annotations** — the `field_code` hints, footnotes `note.1`…`note.9` and the
+- **Reviewer annotations** — the `field_code` hints, footnotes `note.1`…`note.8` and the
   `.notes-legend` block — are toggled by the **Codes** button (`#docs-toggle`, flips
   `body.hide-docs`), hidden by default. When a label is dropped, its annotations move to whatever
   replaced it rather than disappearing.
@@ -519,10 +525,12 @@ button you came for.
   22px then separates the block from « Résumé du cas », the same value `.notes-legend` uses for
   its own break. This also retires the "Create sits below the fold" caveat, which was a parked
   item rather than a fixed one.
-  - **The standing hint under the buttons became footnote 9.** « Enregistrez un brouillon à tout
+  - **The standing hint under the buttons became the Save-draft footnote** (numbered 9 then,
+    **8 since 2026-09-25**, when the ordering-site note was removed and the rest shifted down).
+    « Enregistrez un brouillon à tout
     moment… » explained a *feature*; the reviewer annotations are where this file explains
     features, and the rail is where it reports *state*. The `rail.note.hint` keys were retired
-    and `note.9` carries the copy, anchored by a `<sup class="fn">9</sup>` on Save draft itself —
+    and `note.8` carries the copy, anchored by a `<sup class="fn">8</sup>` on Save draft itself —
     every other note has an anchor, and the button is the thing it describes. The marker is
     wrapped in a `<span>` with the label: `.cta` is `display:grid`, so a bare `<sup>` sibling
     becomes a second row instead of a superscript, and `localize()` would overwrite it if it
@@ -558,6 +566,58 @@ button you came for.
     some mixture of `syncProbandLink()`, `sumFamily()` and `renderPedigree()`, none of which
     repaints the Analyse row.
 
+- **The prescriber is one checkbox with no field label, and the ordering site is gone**
+  (2026-09-25, Lucas). In its default state the prescriber has **no label and no input** — just
+  ☑ **« Je suis médecin prescripteur ou responsable »** / "I am the ordering or responsible
+  physician", ticked. Unticking reveals a label **« Qui demande cette analyse »** / "Who is
+  requesting this analysis" **and** its input, together. Derive-and-hide applied to free text:
+  the person filling the form is usually the prescriber, so the common answer is the default and
+  the field costs no height at all until it is wrong. A field label in the default state would
+  have labelled nothing — the checkbox is the whole statement — which is why it was dropped
+  rather than kept above the box.
+  - **Both states feed the one `ordering_physician` field.** Ticked, the system is meant to
+    capture **the current user** as the ordering physician; unticked, the **typed name**. One
+    field, two sources — which is why the `(ordering_physician)` annotation **moved onto the
+    checkbox line**, the way `(category_code)` rides the prenatal one: the checkbox is the
+    field's primary control now and the input is only the fallback path. (That is also the
+    standing rule — a dropped label takes its annotations with it rather than losing them.)
+  - **This derives from the session, not from the page**, which is new. Every other
+    derive-and-hide value in this form is worked out from something else the user entered; this
+    one assumes the form knows who is filling it in and can resolve them. See open question 12.
+  - Re-ticking **clears** what was typed — the same "nothing hidden reaches the case" rule as
+    the prenatal block and the family identification block. Unticking focuses the input, since
+    it only appeared because the user asked for it. **Not in the gate**: the field was optional
+    before and still is.
+  - **`.physwho[hidden]{display:none}` is not optional.** `hidden` only sets `display:none` as a
+    *default*, and any display of our own beats it — the first version set `display:flex` on the
+    revealed block and it was never actually hidden. A measured assertion caught it; nothing
+    that only looked at the markup would have.
+  - **« Établissement prescripteur » (`ordering_organization_code`) was removed outright** — the
+    markup, `OPTIONS.ordering`, `state.orderingSet`, both `lbl.ordering` and `ph.selOrdering`
+    keys, and its footnote. `ORGS` stays: « Établissement du patient » still uses it.
+  - **The legend lost a note, so everything after it shifted.** The reviewer notes are an `<ol>`,
+    which renumbers itself, but the `<sup class="fn">N</sup>` anchors are literal — so removing
+    the ordering-site note meant renumbering the anchors *and* the keys. There are now
+    **eight** notes.
+  - **They are numbered in reading order**, down the form column and then the rail: §1 (1, 2, 3),
+    §2 (4, 5), §3 (6), §5 (7 on the section title, and 5 again on the card), rail (8). Study and
+    patient organization were the wrong way round — 4 in §1 above 3 in §2 — and were swapped on
+    2026-09-25. Checking this needs the rendered page, not the markup: the rail's block sits
+    *before* the family-row template in the file but *after* §5 on screen.
+  - **Note 7 hangs off §5's title, not off a field.** It used to sit on the family card's
+    « Établissement du patient », which was ambiguous — §2's field of the same name carries
+    note 4 — and buried, since that block only opens once a member is ticked into the analysis.
+    The note describes the whole section, so the title is its place, and every anchor is now in
+    the DOM from the start. The title's text is wrapped in a `<span>` so `localize()` cannot
+    wipe the marker (it assigns `textContent` to the `[data-i18n]` element), and so the `<sup>`
+    is not flung to the right margin by the `h2`'s `flex:1`. Same trick as the Save-draft
+    footnote. The card keeps its own health-number anchor.
+  - Note 4 lost the clause « C'est ce champ, **et non l'établissement prescripteur**, qui
+    contrôle… » with that field. The PHI-visibility rationale stayed: it is still true, and it
+    is still the answer to "why is this one not derived like the others?". Note 7 then lost its
+    own « (il pilote le masquage des RPI par patient) » on 2026-09-25 — the same point, made
+    twice, and note 4 is where it belongs.
+
 - **User text is never concatenated into `innerHTML`.** There is no escaping helper in this file;
   mixed content is built from `createTextNode` / `createElement` (`markMatch`, `renderChips`,
   `paintProbandRef`). An identifier is free text, so this matters.
@@ -576,9 +636,10 @@ Ranked by how much they block work:
 5. **French HPO terms are largely machine-translated** and need a French clinician's review.
 6. **Two apparent duplicates in the catalog**: NPC and NEUTP both read « Neutropénie congénitale »;
    HLEB and HLH both carry act number 55412. Data-entry error, or a real distinction?
-7. Whether the search should also apply to **établissement prescripteur / du patient** — plugging
-   in the real Quebec establishment list would trip the 8-entry threshold on its own. **On hold**
-   as of 2026-09-15.
+7. Whether the search should also apply to **« Établissement du patient »** — plugging in the
+   real Quebec establishment list would trip the 8-entry threshold on its own. **On hold** as of
+   2026-09-15. It used to cover the prescriber's establishment too; that field was removed on
+   2026-09-25, so only the patient's is left.
 8. **Radiant has no prenatal fields at all.** Checked on 2026-09-15 against
    `radiant-network/radiant-portal`: across all 20 migrations, `public.cases`, `public.patient`
    and the `CaseBatch` API, the only prenatal thing in the model is
@@ -602,3 +663,16 @@ Ranked by how much they block work:
     `UNIQUE (organization_code, submitter_patient_id)`. The schema has clearly thought about
     fetuses — the `jhn` index comments "newborns/fetuses have none yet" — so this is worth
     asking the Radiant team.
+12. **What does `ordering_physician` hold, and can it be derived from the session?** Since
+    2026-09-25 the prescriber is a checkbox whose ticked state is meant to capture the current
+    user (see the decision above). That rests on two unconfirmed things: that the form knows who
+    the user is and can resolve them, and what the field actually stores. **If it is free text**,
+    both paths yield a name and the control we have is right. **If it is a reference to a
+    practitioner record**, the ticked path has an id available but the typed path does not, and a
+    free-text input is the wrong control for it — the two paths would produce different kinds of
+    value for the same field.
+    **A starting point for that discussion, not a decision** (Lucas, 2026-09-25): make the
+    unticked path a **typeahead over the member/practitioner directory** — a hit records that
+    **id**, a miss falls back to the **typed name as free text**. The two paths then agree
+    whenever the directory knows the person, and degrade gracefully when it does not. Nothing
+    of this is built; the form still has a plain text input.

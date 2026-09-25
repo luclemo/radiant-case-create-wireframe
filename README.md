@@ -19,6 +19,9 @@ Five sections — **Analyse · Patient (cas index) · Signes cliniques · Autres
 cliniques · Famille** — plus a summary rail tracking the seven required fields (nine
 in a prenatal case).
 
+- **The prescriber defaults to you** — ☑ « Je suis médecin prescripteur ou responsable »,
+  ticked, with no field label and no input. Untick it and « Qui demande cette analyse » plus its
+  input appear. « Établissement prescripteur » was removed on 2026-09-25.
 - **Analysis menu** — the real 37-analysis catalog (`analysis_catalog_qlin.csv`), searchable.
   Matches anywhere in the string, since names are prefixed with act numbers.
 - **Patient lookup is identifier-first, and confirmed before anything is written** — it keys on
