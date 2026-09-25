@@ -20252,7 +20252,13 @@
       openMenu(el, items(), cur, function(v){
         if(key === 'analysis'){ pickAnalysis(v); }
         else if(key === 'issuing'){ setSel(el,'issuing',v); state.issuingSet = true; probandOrg = v; syncFamilyOrg(); recompute(); runLookup(); }
-        else { setSel(el,key,v); recompute(); }
+        else {
+          setSel(el,key,v);
+          /* the user has answered Priority themselves, so the prenatal prefill lets go of it
+             for good — nothing the form does later overwrites a deliberate clinical call */
+          if(key === 'priority'){ priorityBeforePrenatal = null; priorityUserSet = true; }
+          recompute();
+        }
       });
     }
     el.addEventListener('click', fire);
@@ -20353,8 +20359,9 @@
 
   /* ---------- prenatal: reveal the extra fields and rename section 2. Switching prenatal OFF
        clears the revealed fields, so nothing hidden submits. Fetal sex + gestational age are
-       folded into the required gate by recompute() (7 -> 9). Priority is deliberately NOT touched
-       here: it is always the user's call (2026-09-08). ---------- */
+       folded into the required gate by recompute() (7 -> 9). Priority is prefilled STAT for a
+       prenatal case that is not a fetal demise (2026-09-25) — a prefill the user can overrule,
+       not the derivation dropped in 2026-09-08; see syncPriorityPrefill below. ---------- */
   /* section 2's title swaps between two i18n keys, so a language switch repaints it by itself */
   function syncProbandTitle(on){
     var h = document.querySelector('[data-i18n="sec.proband"], [data-i18n="sec.probandPrenatal"]');
@@ -20363,6 +20370,40 @@
   }
   /* what Sex held before prenatal forced it to Female, so switching prenatal off can put it back */
   var sexBeforePrenatal = null;
+  /* …and the same for Priority, which a prenatal case prefills STAT (2026-09-25). Flashed like
+     every other value the form sets on the user's behalf, so the change is not silent. */
+  var priorityBeforePrenatal = null;   // what to put back; non-null while the form owns Priority
+  var priorityUserSet = false;         // …unless the user has answered it themselves this episode
+  function setPriority(val){
+    var el = document.querySelector('[data-sel="priority"]');
+    setSel(el, 'priority', val);
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }
+  /* STAT is offered for a prenatal case, but NOT for a fetal demise — there is nothing to rush
+     for. Two inputs decide it (the prenatal checkbox and the gestational basis), so one function
+     reconciles rather than each handler guessing; it is idempotent, so it can be called freely.
+     `priorityBeforePrenatal` is non-null exactly while the form owns the value, and holds what
+     to put back. `priorityUserSet` is the separate question of whether the form may take it at
+     all: the user answering Priority themselves sets it, and only ticking « Cas prénatal »
+     afresh clears it. Two flags because they are two different facts — with one, letting go on
+     a demise would have let the form grab the value again on the way back to DDM, overwriting
+     a deliberate clinical call. */
+  function syncPriorityPrefill(){
+    var prenatal = document.querySelector('[data-check="prenatal"]').classList.contains('on');
+    var basis = document.querySelector('[data-radio="gestage"] .radio.on');
+    var demise = !!basis && basis.dataset.val === 'demise';
+    var el = document.querySelector('[data-sel="priority"]');
+    var wantStat = prenatal && !demise;
+    if(wantStat){
+      if(!priorityUserSet && priorityBeforePrenatal === null){   // free to take — prefill
+        priorityBeforePrenatal = el.dataset.value || 'Routine';
+        setPriority('STAT');
+      }
+    } else if(priorityBeforePrenatal !== null){     // ours, and no longer wanted
+      if(el.dataset.value === 'STAT') setPriority(priorityBeforePrenatal);
+      priorityBeforePrenatal = null;
+    }
+  }
   function setSexSeg(val){
     var seg = document.querySelector('[data-seg="sex"]');
     Array.prototype.forEach.call(seg.children, function(sp){ sp.classList.toggle('on', sp.dataset.val === val); });
@@ -20378,6 +20419,7 @@
       var cur = document.querySelector('[data-seg="sex"] .on');
       sexBeforePrenatal = cur ? cur.dataset.val : '';
       setSexSeg('F');
+      priorityUserSet = false;   // a fresh tick is a fresh prefill, whatever was chosen before
     } else {
       block.setAttribute('hidden','');
       if(sexBeforePrenatal !== null){ setSexSeg(sexBeforePrenatal); sexBeforePrenatal = null; }
@@ -20387,6 +20429,7 @@
       document.getElementById('gest-lmp-field').setAttribute('hidden','');
       document.getElementById('gest-edd-field').setAttribute('hidden','');
     }
+    syncPriorityPrefill();   // reads the checkbox and the basis, so it runs after both settle
     recompute();
   }
   /* Priority rail row — mirrors the category row: shown only when it leaves the Routine default */
@@ -20537,6 +20580,7 @@
         edd.toggleAttribute('hidden', v !== 'EDD');
         if(v !== 'LMP'){ var l = document.querySelector('[data-field="lmpdate"]'); if(l) l.value = ''; }
         if(v !== 'EDD'){ var d = document.querySelector('[data-field="edddate"]'); if(d) d.value = ''; }
+        syncPriorityPrefill();   // « Fœtus décédé » takes STAT back off; DDM/DPA put it on
       }
       recompute();
     });

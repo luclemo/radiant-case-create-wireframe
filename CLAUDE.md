@@ -177,7 +177,8 @@ Useful patterns:
 
 Five sections, French by default.
 
-**1 · Analyse** — Analyse\* (searchable menu over the 37 catalog entries) | Priorité (Routine);
+**1 · Analyse** — Analyse\* (searchable menu over the 37 catalog entries) | Priorité (Routine,
+**prefilled STAT in a prenatal case** since 2026-09-25 — still editable, see the decision below);
 under them the ☐ **Cas prénatal** checkbox (it carries the `category_code` annotation and
 footnote 2, the "Catégorie" label having been dropped); « Étude de recherche (consentement
 obtenu) » (Pragmatic · Care4Rare · RQDM), full width — picking a study *is* the consent, so there
@@ -378,8 +379,24 @@ button you came for.
   is kept in `conditionCode` either way.
 - **Case type (germline/somatic) comes from `analysis_type_code`** — one type per analysis in the
   real catalog, which settles the open assumption in footnote 1.
-- **Priority is never derived.** Prenatal used to force STAT and a fetal demise used to undo it;
-  both rules were dropped — the user always picks.
+- **Priority is prefilled in a prenatal case, never derived** (2026-09-08, revised 2026-09-25).
+  Prenatal used to *force* STAT and a fetal demise used to *undo* it; both rules were dropped on
+  2026-09-08 because the user always picks. **Both are back as a prefill**, which is a different
+  thing from a derivation: ticking « Cas prénatal » sets STAT, **unless the gestational basis is
+  « Fœtus décédé »** — there is nothing to rush for — and the control stays open throughout.
+  - **Two inputs decide it**, the checkbox and the basis, so one function (`syncPriorityPrefill`)
+    reconciles them rather than each handler guessing. It is idempotent and reads both, so the
+    two can be toggled in any order and the answer is the same.
+  - **Two flags, not one.** `priorityBeforePrenatal` holds what to put back and is non-null
+    exactly while the form owns the value; `priorityUserSet` is the separate question of whether
+    the form may take it at all. With a single flag, letting go on a demise let the form grab the
+    value again on the way back to DDM — overwriting a deliberate clinical call. Only ticking
+    « Cas prénatal » afresh clears `priorityUserSet`: a new episode gets a new default.
+  - **The user's own answer wins and keeps winning.** Once Priority is picked by hand the form
+    does not touch it again for that episode — not on a demise, not on the way back, not on
+    unticking. Contrast Sex, which prenatal genuinely *knows* and therefore restores
+    unconditionally; priority is always a judgement.
+  - The change **flashes**, like every other value the form sets on the user's behalf.
 - **The field once called "issuing site" is « Établissement du patient » / "Patient organization"**
   — it is FHIR's `managingOrganization`, not HL7v2's sending facility. The internal key stays
   `issuing`. **No default value.**
